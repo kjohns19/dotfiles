@@ -45,7 +45,7 @@ set hlsearch
 " command history
 set history=500
 
-let mapleader=","
+let mapleader="\<C-k>"
 
 " different color past 100 characters
 let &colorcolumn=join(range(100, 500),",")
@@ -55,12 +55,17 @@ syn on
 " colorscheme setup
 let g:jellybeans_overrides = {
 \    'ColorColumn': { 'guibg': '242424', 'ctermbg': 234 },
-\    'Search':      { 'guifg': 'f0a0c0', 'ctermfg': 'Magenta', 'gui': 'underline' }
+\    'Search':      { 'guifg': 'f0a0c0', 'ctermfg': 'Magenta', 'gui': 'underline' },
+\    'Special':     { 'guifg': '397d3a', 'ctermfg': 'Green' }
 \}
 colorscheme jellybeans
 
 filetype plugin on
 set omnifunc=syntaxcomplete#Complete
+
+" move up and down visible columns (helps with line wrapping)
+nnoremap j gj
+nnoremap k gk
 
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 " search for entire words (i.e. 'foo' will find 'foo' but not 'foobar' or 'barfoo')
@@ -72,6 +77,14 @@ nnoremap <Leader>V ?\<\><left><left>
 nnoremap <Leader>f /\(\(if\\|for\\|while\\|switch\\|sizeof\\|return\)\_s*(\)\@!\<\h\w*\(\_s*(\)\@=<CR>
 " and reverse search
 nnoremap <Leader>F ?\(\(if\\|for\\|while\\|switch\\|sizeof\\|return\)\_s*(\)\@!\<\h\w*\(\_s*(\)\@=<CR>
+
+" move tab left or right
+nnoremap <Leader><C-h> :tabm-1<CR>
+nnoremap <Leader><C-l> :tabm+1<CR>
+
+" cd to file directory (local and global)
+nnoremap <Leader>c :lcd %:p:h<CR>
+nnoremap <Leader>C :cd %:p:h<CR>
 
 " reload vimrc
 nmap <Leader>r :so ~/.vimrc<CR>
