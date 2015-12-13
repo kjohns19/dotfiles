@@ -3,6 +3,27 @@ version 6.0
 " not compatible with vi
 set nocompatible
 
+" Plugins
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'mileszs/ack.vim'
+Plugin 'scrooloose/syntastic'
+Plugin 'nanotech/jellybeans.vim'
+call vundle#end()
+filetype plugin on
+
+" syntastic settings
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_cpp_check_header = 1
+
 " 256 colors
 set t_Co=256
 
@@ -60,7 +81,6 @@ let g:jellybeans_overrides = {
 \}
 colorscheme jellybeans
 
-filetype plugin on
 set omnifunc=syntaxcomplete#Complete
 
 " move up and down visible columns (helps with line wrapping)
@@ -85,6 +105,11 @@ nnoremap <Leader><C-l> :tabm+1<CR>
 " cd to file directory (local and global)
 nnoremap <Leader>c :lcd %:p:h<CR>
 nnoremap <Leader>C :cd %:p:h<CR>
+
+nnoremap <Leader>s :Ack! <cword><CR>
+nnoremap <Leader>S :Ack! --type-add hh:ext:hpp --hh <cword><CR>
+nnoremap <Leader>a :Ack! 
+nnoremap <Leader>A :Ack! --type-add hh:ext:hpp --hh 
 
 " reload vimrc
 nmap <Leader>r :so ~/.vimrc<CR>
