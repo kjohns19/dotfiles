@@ -21,18 +21,82 @@ shopt -s checkwinsize
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-
 # 256 colors!
 case $TERM in
 xterm)  TERM=xterm-256color;;
 screen) TERM=screen-256color;;
 esac
 
-PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+# Funtions to time the last command
+function __set_command_start() {
+    [ -z "$_command_start" ] && _command_start=$(date +"%s %N")
+}
+function __calc_elapsed_time() {
+    local begin_s
+    local begin_ns
+    local end_s
+    local end_ns
+    read begin_s begin_ns <<< "$_command_start"
+    begin_ns=${begin_ns##+(0)}
+    read end_s end_ns <<< $(date +"%s %N")
+    end_ns=${end_ns##+(0)}
+    local s=$((end_s - begin_s))
+    local ms
+    if [ $end_ns -ge $begin_ns ]; then
+        ms=$(((end_ns - begin_ns) / 1000000))
+    else
+        s=$((s-1))
+        ms=$(((1000000000 + end_ns - begin_ns) / 1000000))
+    fi
+    printf "%03u.%03u" "$s" "$ms"
+}
+
+# PS1 setup
+function __prompt_command() {
+    local EXIT=$?
+    local TIME=$(__calc_elapsed_time)
+    local JOBS=$(jobs -rp | wc -l)
+
+    local RED="\[\033[0;31m\]"
+    local BLUE="\[\033[1;34m\]"
+    local GREEN="\[\033[0;32m\]"
+    local LIGHTRED="\[\033[1;31m\]"
+    local BROWN="\[\033[0;33m\]"
+    local YELLOW="\[\033[1;33m\]"
+    local NONE="\[\033[0m\]"
+
+    local ARROW="$(printf "\xe2\x87\x92") "
+    local ARROW2="$(printf "\xe2\x86\xb3") "
+
+    # Start on new line
+    PS1="\n"
+
+    # Time of last command
+    PS1+="$LIGHTRED$TIME$NONE "
+
+    # user@host workingdir
+    PS1+="$BLUE\u@\h $GREEN\w$NONE"
+
+    # Current git branch
+    local branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+    [ -n "$branch" ] && PS1+=" $LIGHTRED($branch)$NONE"
+
+    # Show number of jobs if > 0
+    [ $JOBS -gt 0 ] && PS1+=" $YELLOW$JOBS$NONE"
+
+    # Show exit status of last command if != 0
+    [ $EXIT != 0 ] && PS1+=" $RED$EXIT$NONE"
+
+    PS1+="\n"
+
+    # Prompt: a yellow arrow
+    PS1+="$YELLOW$ARROW$NONE"
+    PS2="$YELLOW$ARROW2$NONE"
+    _command_start=
+}
+__set_command_start
+trap __set_command_start DEBUG
+export PROMPT_COMMAND=__prompt_command
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
