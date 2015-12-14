@@ -48,7 +48,7 @@ function __calc_elapsed_time() {
         s=$((s-1))
         ms=$(((1000000000 + end_ns - begin_ns) / 1000000))
     fi
-    printf "%03u.%03u" "$s" "$ms"
+    printf "%u.%03u" "$s" "$ms"
 }
 
 # PS1 setup
