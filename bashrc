@@ -31,6 +31,16 @@ esac
 function __set_command_start() {
     [ -z "$_command_start" ] && _command_start=$(date +"%s %N")
 }
+function __format_time() {
+    local h=$1; h=$((h/3600))
+    local m=$1; m=$(((m/60)%60))
+    local s=$1; s=$((s%60))
+    local ms=$2;
+    if   [ $h -gt 0 ]; then printf '%u:%02u:%02u.%03u' $h $m $s $ms
+    elif [ $m -gt 0 ]; then printf '%u:%02u.%03u' $m $s $ms
+    else                    printf '%u.%03u' $s $ms
+    fi
+}
 function __calc_elapsed_time() {
     local begin_s
     local begin_ns
@@ -48,7 +58,7 @@ function __calc_elapsed_time() {
         s=$((s-1))
         ms=$(((1000000000 + end_ns - begin_ns) / 1000000))
     fi
-    printf "%u.%03u" "$s" "$ms"
+    __format_time $s $ms
 }
 
 # PS1 setup
