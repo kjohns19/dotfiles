@@ -36,9 +36,9 @@ function __format_time() {
     local m=$1; m=$(((m/60)%60))
     local s=$1; s=$((s%60))
     local ms=$2;
-    if   [ $h -gt 0 ]; then printf '%u:%02u:%02u.%03u' $h $m $s $ms
-    elif [ $m -gt 0 ]; then printf '%u:%02u.%03u' $m $s $ms
-    else                    printf '%u.%03u' $s $ms
+    if   [ $h -gt 0 ]; then printf '%uh%02um%02u.%03us' $h $m $s $ms
+    elif [ $m -gt 0 ]; then printf '%um%02u.%03us' $m $s $ms
+    else                    printf '%u.%03us' $s $ms
     fi
 }
 function __calc_elapsed_time() {
