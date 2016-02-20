@@ -11,6 +11,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'mileszs/ack.vim'
 Plugin 'scrooloose/syntastic'
 Plugin 'nanotech/jellybeans.vim'
+Plugin 'airblade/vim-gitgutter'
 call vundle#end()
 filetype plugin on
 
@@ -20,7 +21,11 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 0
 let g:syntastic_cpp_check_header = 1
-let g:syntastic_cpp_compiler_options = '-std=c++11 -Wall'
+let g:syntastic_cpp_checkers = ['gcc']
+let g:syntastic_cpp_compiler = 'g++'
+let g:syntastic_cpp_compiler_options = '-std=c++14 -Wall'
+let g:syntastic_loc_list_height = 5
+let g:syntastic_python_python_exec = '/usr/bin/python3'
 
 " 256 colors
 set t_Co=256
@@ -60,6 +65,8 @@ set cursorline
 
 " highlight search results
 set hlsearch
+
+set updatetime=250
 
 " command history
 set history=500
