@@ -28,10 +28,10 @@ screen) TERM=screen-256color;;
 esac
 
 # Funtions to time the last command
-function __set_command_start() {
+__set_command_start() {
     [ -z "$_command_start" ] && _command_start=$(date +"%s %N")
 }
-function __format_time() {
+__format_time() {
     local h=$1; h=$((h/3600))
     local m=$1; m=$(((m/60)%60))
     local s=$1; s=$((s%60))
@@ -41,7 +41,7 @@ function __format_time() {
     else                    printf '%u.%03us' $s $ms
     fi
 }
-function __calc_elapsed_time() {
+__calc_elapsed_time() {
     local begin_s
     local begin_ns
     local end_s
@@ -62,16 +62,18 @@ function __calc_elapsed_time() {
 }
 
 # PS1 setup
-function __prompt_command() {
+__prompt_command() {
     local EXIT=$?
+    local DATESTR=$(date +"%s %N %H:%M:%S")
     local TIME=$(__calc_elapsed_time)
+    local DATE=$(cut -d' ' -f3 <<< $DATESTR)
     local JOBS=$(jobs -rp | wc -l)
 
     local RED="\[\033[0;31m\]"
     local BLUE="\[\033[1;34m\]"
     local GREEN="\[\033[0;32m\]"
     local LIGHTRED="\[\033[1;31m\]"
-    local BROWN="\[\033[0;33m\]"
+    local PURPLE="\[\033[0;95m\]"
     local YELLOW="\[\033[1;33m\]"
     local NONE="\[\033[0m\]"
 
@@ -82,20 +84,20 @@ function __prompt_command() {
     PS1="\n"
 
     # Time of last command
-    PS1+="$LIGHTRED$TIME$NONE "
+    PS1+="$PURPLE$DATE $LIGHTRED$TIME "
 
     # user@host workingdir
-    PS1+="$BLUE\u@\h $GREEN\w$NONE"
+    PS1+="$BLUE\u@\h $GREEN\w"
 
     # Current git branch
     local branch=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
-    [ -n "$branch" ] && PS1+=" $LIGHTRED($branch)$NONE"
+    [ -n "$branch" ] && PS1+=" $LIGHTRED($branch)"
 
     # Show number of jobs if > 0
-    [ $JOBS -gt 0 ] && PS1+=" $YELLOW$JOBS$NONE"
+    [ $JOBS -gt 0 ] && PS1+=" $YELLOW$JOBS"
 
     # Show exit status of last command if != 0
-    [ $EXIT != 0 ] && PS1+=" $RED$EXIT$NONE"
+    [ $EXIT != 0 ] && PS1+=" $RED$EXIT"
 
     PS1+="\n"
 
@@ -135,7 +137,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export PATH=$PATH:~/programming/programs:~/pebble-dev/PebbleSDK-3.0-beta12/bin
+export PATH=$PATH:~/bin
 
 set -o vi
 
