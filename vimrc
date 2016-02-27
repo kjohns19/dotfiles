@@ -111,10 +111,15 @@ nnoremap <Leader><C-l> :tabm+1<CR>
 nnoremap <Leader>c :lcd %:p:h<CR>
 nnoremap <Leader>C :cd %:p:h<CR>
 
+" search with ack
 nnoremap <Leader>s :Ack! <cword><CR>
 nnoremap <Leader>S :Ack! --type-add hh:ext:hpp --hh <cword><CR>
 nnoremap <Leader>a :Ack! 
 nnoremap <Leader>A :Ack! --type-add hh:ext:hpp --hh 
+
+" next/previous change
+nmap <Leader><C-j> <Plug>GitGutterNextHunk
+nmap <Leader><C-k> <Plug>GitGutterPrevHunk
 
 " reload vimrc
 nmap <Leader>r :so ~/.vimrc<CR>
