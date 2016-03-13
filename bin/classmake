@@ -156,7 +156,7 @@ if __name__ == "__main__":
         snake_name = "_".join([s.upper() for s in re.findall(r'[A-Z][^A-Z]*', classname)])
         snake_lower = snake_name.lower()
 
-        guard = "INCLUDED_" + namespace_snake + snake_name
+        guard = "INCLUDED_" + namespace_snake + snake_name + "_HPP"
 
         headerfile = snake_lower + ".hpp"
         classfile = snake_lower + ".cpp"
