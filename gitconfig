@@ -1,0 +1,12 @@
+[user]
+    email = krjohnson111@gmail.com
+    name = Kevin Johnson
+[credential "https://github.com"]
+    username = kjohns19
+[push]
+    default = simple
+[diff]
+    tool = vimdiff
+[alias]
+    dt = difftool
+    tree = log --graph --decorate --oneline

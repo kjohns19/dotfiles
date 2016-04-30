@@ -137,7 +137,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
-export PATH=$PATH:~/bin
+export PATH=$PATH:~/bin:~/bin/gitaliases
 
 set -o vi
 
