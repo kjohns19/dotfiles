@@ -10,3 +10,5 @@ echo ".bashrc"
 ln -s $DOTFILEDIR/bashrc ~/.bashrc
 echo ".tmux.conf"
 ln -s $DOTFILEDIR/tmux.conf ~/.tmux.conf
+echo ".gitconfig"
+ln -s $DOTFILEDIR/gitconfig ~/.gitconfig
