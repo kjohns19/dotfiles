@@ -1,0 +1,72 @@
+#!/bin/bash
+# like git-difftool but opens all modified files in separate tabs
+
+# Helper script called by git difftool
+# Gets files to diff as arguments
+# Creates hard links for any temporary files (git difftool removes the original later)
+# Echoes both filenames to get captured
+cmd='bash -c "
+    function maketemp() {
+        file=\$1;
+        if [[ \$(dirname \"\$file\") == /tmp ]]; then
+            base=\$(basename \"\$file\");
+            tmpfile=\$(mktemp \"/tmp/XXXXXX_\${base:7}\");
+            ln -f \"\$file\" \"\$tmpfile\";
+            file=\$tmpfile;
+        fi;
+        echo \"\$file\";
+    };
+    maketemp \"\$2\";
+    maketemp \"\$1\";
+" helper'
+
+# Get list of files to diff
+files=$(git difftool --extcmd="$cmd" --noprompt "$@")
+[[ -z $files ]] && exit
+
+# Helper functions
+# ' ' to '\ ' for vim
+function fixfile() {
+    echo "$@" | sed 's/ /\\ /g'
+}
+# Path relative to working directory
+function fixpath() {
+    realpath --relative-base . "$@"
+}
+# File is local (neither /dev/null or temporary)
+function islocal() {
+    [[ "$@" == /dev/null ]] || [[ $(dirname "$@") == /tmp ]]
+}
+
+root=$(git rev-parse --show-toplevel)
+edit=e
+while read -r file1; do
+    read -r file2
+
+    # Make non-tmp files relative to current directory
+    islocal "$file1" || file1=$(fixpath "$root/$file1")
+    islocal "$file2" || file2=$(fixpath "$root/$file2")
+
+    # Open current file in new tab, open old version in split, move cursor to current file
+    vimcmd="$vimcmd$edit $(fixfile "$file1")|vert diffsplit $(fixfile "$file2")|wincmd l|"
+    edit=tabe
+    count=$(($count+1))
+done <<< "$files"
+
+# Go back to first tab
+vimcmd="${vimcmd}normal 1gt"
+
+# Print files that will be opened
+[[ $count > 1 ]] && mult=s
+echo "Diffing $count file$mult:"
+git diff --name-only "$@" | sed 's/^/  /'
+
+# Run vim then remove the temp files
+vim -dRc "$vimcmd"
+status=$?
+
+# remove tmp files
+egrep '^/tmp' <<< "$files" | xargs rm 2>/dev/null
+
+# Exit with vim status
+exit $status

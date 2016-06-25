@@ -1,0 +1,9 @@
+#!/bin/bash
+
+COMMIT=$1
+COUNT=$2
+
+[[ -z $COMMIT ]] && COMMIT=HEAD
+[[ -z $COUNT  ]] && COUNT=1
+
+git da "$COMMIT"~"$COUNT".."$COMMIT"
