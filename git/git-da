@@ -20,11 +20,22 @@ cmd='bash -c "
     maketemp \"\$1\";
 " helper'
 
+# No prompt if -f is first argument
+if [[ "$1" = -f ]]; then
+    noprompt=yes
+    shift
+fi
+
 # Get list of files to diff
-files=$(git difftool --extcmd="$cmd" --noprompt "$@")
+files=$(git difftool --extcmd="$cmd" --noprompt "$@") || exit $?
 [[ -z $files ]] && exit
 
+
 # Helper functions
+# remove tmp files
+function cleanup() {
+    egrep '^/tmp' <<< "$files" | xargs rm 2>/dev/null
+}
 # ' ' to '\ ' for vim
 function fixfile() {
     echo "$@" | sed 's/ /\\ /g'
@@ -37,6 +48,9 @@ function fixpath() {
 function islocal() {
     [[ "$@" == /dev/null ]] || [[ $(dirname "$@") == /tmp ]]
 }
+
+# Cleanup tmp files on exit
+trap cleanup EXIT
 
 root=$(git rev-parse --show-toplevel)
 edit=e
@@ -61,12 +75,10 @@ vimcmd="${vimcmd}normal 1gt"
 echo "Diffing $count file$mult:"
 git diff --name-only "$@" | sed 's/^/  /'
 
-# Run vim then remove the temp files
+# Prompt to continue
+response=y
+[[ -z "$noprompt" ]] && read -p 'Continue? [Y/n] ' response
+[[ "$response" = n ]] && exit
+
+# Run vim
 vim -dRc "$vimcmd"
-status=$?
-
-# remove tmp files
-egrep '^/tmp' <<< "$files" | xargs rm 2>/dev/null
-
-# Exit with vim status
-exit $status
