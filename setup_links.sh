@@ -5,10 +5,11 @@ DOTFILEDIR=$(realpath $(dirname $0))
 echo "Setting up symlinks from $DOTFILEDIR to $HOME"
 
 echo ".vimrc"
-ln -s $DOTFILEDIR/vimrc ~/.vimrc
+ln -sn "$DOTFILEDIR/vimrc" "$HOME/.vimrc"
 echo ".bashrc"
-ln -s $DOTFILEDIR/bashrc ~/.bashrc
+ln -sn "$DOTFILEDIR/bashrc" "$HOME/.bashrc"
+ln -sn "$DOTFILEDIR/bash" "$HOME/.bash"
 echo ".tmux.conf"
-ln -s $DOTFILEDIR/tmux.conf ~/.tmux.conf
+ln -sn "$DOTFILEDIR/tmux.conf" "$HOME/.tmux.conf"
 echo ".gitconfig"
-ln -s $DOTFILEDIR/gitconfig ~/.gitconfig
+ln -sn "$DOTFILEDIR/gitconfig" "$HOME/.gitconfig"

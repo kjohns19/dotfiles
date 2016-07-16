@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# colors for ls, grep and friends
+alias    ls='ls    --color=auto -F'
+alias  grep='grep  --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+
+# prompt before overwriting for mv and cp
+alias mv='mv -i'
+alias cp='cp -i'
+
+# Add git aliases to path
+export PATH=$PATH:~/bin/gitaliases
