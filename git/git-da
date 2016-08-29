@@ -10,7 +10,7 @@ cmd='bash -c "
         file=\$1;
         if [[ \$(dirname \"\$file\") == /tmp ]]; then
             base=\$(basename \"\$file\");
-            tmpfile=\$(mktemp \"/tmp/XXXXXX_\${base:7}\");
+            tmpfile=\$(mktemp --tmpdir=/tmp --suffix \"_\${base:7}\" XXXXXX);
             ln -f \"\$file\" \"\$tmpfile\";
             file=\$tmpfile;
         fi;
