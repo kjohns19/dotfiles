@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Open files in vim using multiple tabs or splits
+# Examples:
+#   Open file1 and file2 in separate tabs. In a 3rd tab open file3 and file4 in splits
+#       vimopen file1 file2 'file3|file4'
+#   Compare file1 with file2 and file3 with file4
+#       vimopen 'file1|file2|-d' 'file3|file4|-d'
+
+vimargs=()
+while [[ "$1" == -* ]]; do
+    [[ "$1" == -- ]] && shift && break
+    vimargs+=("$1")
+    shift
+done
+
+# ' ' to '\ ' for vim
+function fixfile() {
+    printf -- "$@\n" | sed 's/ /\\ /g'
+}
+
+edit=e
+vimcmd=
+
+for arg in "$@"; do
+    diff=
+    count=0
+    while read file; do
+        [[ "$file" == -d ]] && diff=diff && continue
+        count=$((count+1))
+        vimcmd="$vimcmd$edit $(fixfile "$file")|"
+        edit="vert ${diff}split"
+    done < <(printf -- "$arg\n" | sed "s/|/\n/g" | tac)
+    [[ "$count" -gt 1 ]] && vimcmd="${vimcmd}wincmd l|"
+    edit=tabe
+done
+
+# Go back to first tab
+vimcmd="${vimcmd}normal 1gt"
+
+vim "${vimargs[@]}" -c "$vimcmd"

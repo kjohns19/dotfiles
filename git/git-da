@@ -36,10 +36,6 @@ files=$(git difftool --extcmd="$cmd" --noprompt "$@") || exit $?
 function cleanup() {
     egrep '^/tmp' <<< "$files" | xargs rm 2>/dev/null
 }
-# ' ' to '\ ' for vim
-function fixfile() {
-    echo "$@" | sed 's/ /\\ /g'
-}
 # Path relative to working directory
 function fixpath() {
     realpath --relative-base . "$@"
@@ -53,7 +49,7 @@ function islocal() {
 trap cleanup EXIT
 
 root=$(git rev-parse --show-toplevel)
-edit=e
+allfiles=()
 while read -r file1; do
     read -r file2
 
@@ -61,14 +57,9 @@ while read -r file1; do
     islocal "$file1" || file1=$(fixpath "$root/$file1")
     islocal "$file2" || file2=$(fixpath "$root/$file2")
 
-    # Open current file in new tab, open old version in split, move cursor to current file
-    vimcmd="$vimcmd$edit $(fixfile "$file1")|vert diffsplit $(fixfile "$file2")|wincmd l|"
-    edit=tabe
+    allfiles+=("$file2|$file1|-d")
     count=$(($count+1))
 done <<< "$files"
-
-# Go back to first tab
-vimcmd="${vimcmd}normal 1gt"
 
 # Print files that will be opened
 [[ $count > 1 ]] && mult=s
@@ -81,4 +72,4 @@ response=y
 [[ "$response" = n ]] && exit
 
 # Run vim
-vim -dRc "$vimcmd"
+vimopen -R "${allfiles[@]}"
