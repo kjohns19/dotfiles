@@ -1,14 +1,27 @@
 #!/bin/bash
 
+if [ "$1" == -f ]; then
+    force=yes
+    shift
+fi
+
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 file1 file2" >&2
+    echo "Usage: $0 [-f] file1 file2" >&2
     exit 1
 fi
 
+for file in "$1" "$2"; do
+    if [ ! -f "$file" ]; then
+        echo "File $file does not exist" >&2
+        errors=yes
+    fi
+done
+[ -n "$errors" ] && [ -z "$force" ] && exit 2
+
 tmp=$(mktemp -d --tmpdir=$(dirname $1))
 
-mv $1 $tmp
-mv $2 $1
-mv $tmp/$1 $2
+[ -f "$1" ]      && mv $1 $tmp
+[ -f "$2" ]      && mv $2 $1
+[ -f "$tmp/$1" ] && mv $tmp/$1 $2
 
 rm -r $tmp
