@@ -23,7 +23,8 @@ let g:syntastic_check_on_wq = 0
 let g:syntastic_cpp_check_header = 1
 let g:syntastic_cpp_checkers = ['gcc']
 let g:syntastic_cpp_compiler = 'g++'
-let g:syntastic_cpp_compiler_options = '-std=c++14 -Wall'
+let g:syntastic_cpp_compiler_options = '-std=c++14 -Wall '
+    \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", '', '')
 let g:syntastic_loc_list_height = 5
 let g:syntastic_python_python_exec = '/usr/bin/python3'
 
