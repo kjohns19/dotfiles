@@ -91,6 +91,8 @@ set omnifunc=syntaxcomplete#Complete
 " move up and down visible columns (helps with line wrapping)
 nnoremap j gj
 nnoremap k gk
+nnoremap gk k
+nnoremap gj j
 
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 " search for entire words (i.e. 'foo' will find 'foo' but not 'foobar' or 'barfoo')
