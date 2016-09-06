@@ -38,4 +38,4 @@ done
 # Go back to first tab
 vimcmd="${vimcmd}normal 1gt"
 
-vim "${vimargs[@]}" -c "$vimcmd"
+vim "${vimargs[@]}" -c "$vimcmd" </dev/tty
