@@ -1,10 +1,60 @@
 #!/usr/bin/env python3
 
-import sys
-import getopt
+import argparse
 import re
 import os
 import errno
+
+def main():
+    args = parse_args()
+
+    for cls in args.classes:
+        classname, namespaces = parse_class(cls, args.namespaces)
+        make_class(classname, namespaces, args.mkdirs)
+
+
+def parse_args():
+    desc = 'Create a header and implementation file for a class or classes'
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument(
+        '-n', '--namespaces', action='store',
+        help='Put all classes within these namespaces (e.g. foo::bar)')
+    parser.add_argument(
+        '-d', '--mkdirs', action='store_true',
+        help='Make directories for namespaces (e.g. foo/bar/)')
+    parser.add_argument(
+        'classes', action='store', nargs='*',
+        help='Classes to make. May contain namespaces')
+    return parser.parse_args()
+
+
+def parse_class(cls, all_namespaces):
+    namespaces = all_namespaces.split('::') if all_namespaces else []
+    cls_split = cls.split('::')
+    classname = cls_split[-1]
+    namespaces += cls_split[0:-1]
+    return classname, namespaces
+
+def make_class(classname, namespaces, mkdirs):
+    namespace_snake = '_'.join([ns.upper() for ns in namespaces])
+    if namespaces:
+        namespace_snake += '_'
+    snake_name = '_'.join([s.upper() for s in re.findall(r'[A-Z][^A-Z]*', classname)])
+    snake_lower = snake_name.lower()
+
+    guard = 'INCLUDED_{}{}_HPP'.format(namespace_snake, snake_name)
+
+    headerfile = '{}.hpp'.format(snake_lower)
+    classfile = '{}.cpp'.format(snake_lower)
+
+    if mkdirs and namespaces:
+        path = os.path.join(*namespaces)
+        os.makedirs(path, exist_ok=True)
+        headerfile = os.path.join(path, headerfile)
+        classfile = os.path.join(path, classfile)
+
+    write_header(headerfile, guard, namespaces, classname)
+    write_class(classfile, headerfile, namespaces, classname)
 
 class NoFile:
     def __bool__():
@@ -20,152 +70,68 @@ def openNew(filename):
         fh = os.open(filename, flags, mode=0o644)
     except OSError as e:
         if e.errno == errno.EEXIST:
-            print(filename, "already exists")
+            print('{} already exists'.format(filename))
             return NoFile()
         else:
             raise
     else:
         return os.fdopen(fh, 'w')
 
-def write_header(filename, guard, namespaces, classname):
-    lines = [
-        "#ifndef " + guard,
-        "#define " + guard,
-        namespace_header(namespaces),
-        "\n".join([
-            "class " + classname,
-            "{",
-            "public:",
-            "    // TODO",
-            "private:",
-            "    // TODO",
-            "};",
-        ]),
-        namespace_footer(namespaces),
-        "#endif //" + guard
-    ]
+def write_header(filename, guard, ns, cls):
+    data = '\n'.join([
+        '#ifndef {}',
+        '#define {}',
+        '{}',
+        '{}',
+        '{}',
+        '#endif // {}'
+    ]).format(guard, guard, ns_header(ns), class_def(cls), ns_footer(ns), guard)
 
     with openNew(filename) as outfile:
         if outfile:
-            print("\n".join(lines), file=outfile)
+            print(data, file=outfile)
 
 
 def write_class(filename, header, namespaces, classname):
-    lines = [
-        "#include <" + header + ">",
-        namespace_header(namespaces),
-        "// TODO",
-        namespace_footer(namespaces)
-    ]
+    data = '\n'.join([
+        '#include <{}>',
+        '{}',
+        '// TODO',
+        '{}'
+    ]).format(header, ns_header(namespaces), ns_footer(namespaces))
 
     with openNew(filename) as outfile:
         if outfile:
-            print("\n".join(lines), file=outfile)
+            print(data, file=outfile)
 
 
-def namespace_header(namespaces):
-    header = "\n" if namespaces else ""
-    header += "\n".join(["namespace " + ns + " {" for ns in namespaces])
+def ns_header(namespaces):
+    header = '\n' if namespaces else ''
+    header += '\n'.join(['namespace ' + ns + ' {' for ns in namespaces])
     if namespaces:
-        header += "\n"
+        header += '\n'
     return header
 
 
-def namespace_footer(namespaces):
-    footer = "\n" if namespaces else ""
-    footer += "\n".join(["} // close namespace " + ns for ns in reversed(namespaces)])
+def ns_footer(namespaces):
+    footer = '\n' if namespaces else ''
+    footer += '\n'.join(['} // close namespace ' + ns for ns in reversed(namespaces)])
     if namespaces:
-        footer += "\n"
+        footer += '\n'
     return footer
 
 
-def usage(rc=0):
-    lines = [
-        "Usage: " + os.path.basename(__file__) + " [OPTIONS] CLASS...",
-        "Create a header and implementation file for a class",
-        "Options:",
-        "    -h, --help",
-        "        Show usage",
-        "",
-        "    -n NAMESPACE, --namespace NAMESPACE",
-        "        Set the namespace(s) for all classes.",
-        "        You can also set namespaces for individual classes.",
-        "",
-        "    -d, --mkdirs",
-        "        Make directories for all namespaces"
-    ]
-    print("\n".join(lines));
-    sys.exit(rc)
+def class_def(classname):
+    return '\n'.join([
+        'class {}',
+        '{}',
+        'public:',
+        '    // TODO',
+        'private:',
+        '    // TODO',
+        '{};'
+    ]).format(classname, '{', '}')
 
 
-def parse_options(argv):
-    shortopts = "hn:d"
-    longopts = [
-        "help",
-        "namespace",
-        "mkdirs",
-    ]
-    try:
-        opts, args = getopt.gnu_getopt(argv, shortopts, longopts)
-    except getopt.GetoptError as err:
-        print(err)
-        usage(rc=2)
-
-    namespaces = []
-    mkdirs = False
-    classes = []
-
-    for o, a in opts:
-        if o in ("-h", "--help"):
-            usage()
-        elif o in ("-n", "--namespace"):
-            for ns in a.split("::"):
-                namespaces.append(ns)
-        elif o in ("-d", "--mkdirs"):
-            mkdirs = True
-
-    for a in args:
-        splits = a.split("::")
-        classes.append({
-            "classname": splits[-1],
-            "namespaces": namespaces + splits[:-1]
-        })
-
-    if not classes:
-        usage()
-
-    options = {
-        "mkdirs": mkdirs,
-        "classes": classes
-    }
-    return options
-
-if __name__ == "__main__":
-    options = parse_options(sys.argv[1:])
-
-    classes = options["classes"]
-    mkdirs = options["mkdirs"]
-
-    for c in classes:
-        classname = c["classname"]
-        namespaces = c["namespaces"]
-
-        namespace_snake = "_".join([ns.upper() for ns in namespaces])
-        if namespaces:
-            namespace_snake += "_"
-        snake_name = "_".join([s.upper() for s in re.findall(r'[A-Z][^A-Z]*', classname)])
-        snake_lower = snake_name.lower()
-
-        guard = "INCLUDED_" + namespace_snake + snake_name + "_HPP"
-
-        headerfile = snake_lower + ".hpp"
-        classfile = snake_lower + ".cpp"
-
-        if mkdirs and namespaces:
-            path = os.path.join(*namespaces)
-            os.makedirs(path, exist_ok=True)
-            headerfile = os.path.join(path, headerfile)
-            classfile = os.path.join(path, classfile)
-
-        write_header(headerfile, guard, namespaces, classname)
-        write_class(classfile, headerfile, namespaces, classname)
+if __name__ == '__main__':
+    main()
