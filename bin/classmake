@@ -10,7 +10,7 @@ def main():
 
     for cls in args.classes:
         classname, namespaces = parse_class(cls, args.namespaces)
-        make_class(classname, namespaces, args.mkdirs)
+        make_class(classname, namespaces, args)
 
 
 def parse_args():
@@ -22,6 +22,12 @@ def parse_args():
     parser.add_argument(
         '-d', '--mkdirs', action='store_true',
         help='Make directories for namespaces (e.g. foo/bar/)')
+    parser.add_argument(
+        '-s', '--srcdir', action='store', default='src',
+        help='Include the header file relative to this upper directory ' +
+             '(e.g. if set to \'src\' and creating \'/code/src/foo/bar/baz.hpp\', ' +
+             'the header will be included as: \'#include <foo/bar/baz.hpp>). ' +
+             'Defaults to \'src\'. If the upper directory is not found no path is added to the include')
     parser.add_argument(
         'classes', action='store', nargs='*',
         help='Classes to make. May contain namespaces')
@@ -35,7 +41,7 @@ def parse_class(cls, all_namespaces):
     namespaces += cls_split[0:-1]
     return classname, namespaces
 
-def make_class(classname, namespaces, mkdirs):
+def make_class(classname, namespaces, args):
     namespace_snake = '_'.join([ns.upper() for ns in namespaces])
     if namespaces:
         namespace_snake += '_'
@@ -47,14 +53,21 @@ def make_class(classname, namespaces, mkdirs):
     headerfile = '{}.hpp'.format(snake_lower)
     classfile = '{}.cpp'.format(snake_lower)
 
-    if mkdirs and namespaces:
+    if args.mkdirs and namespaces:
         path = os.path.join(*namespaces)
         os.makedirs(path, exist_ok=True)
         headerfile = os.path.join(path, headerfile)
         classfile = os.path.join(path, classfile)
 
-    write_header(headerfile, guard, namespaces, classname)
-    write_class(classfile, headerfile, namespaces, classname)
+    includefile = headerfile
+    if args.srcdir:
+        relative_path = get_relative_path(args.srcdir, os.getcwd())
+        if relative_path:
+            includefile = os.path.join(relative_path, headerfile)
+
+    write_headerfile(headerfile, guard, namespaces, classname)
+    write_classfile(classfile, includefile, namespaces, classname)
+
 
 class NoFile:
     def __bool__():
@@ -77,7 +90,7 @@ def openNew(filename):
     else:
         return os.fdopen(fh, 'w')
 
-def write_header(filename, guard, ns, cls):
+def write_headerfile(filename, guard, ns, cls):
     data = '\n'.join([
         '#ifndef {}',
         '#define {}',
@@ -92,7 +105,7 @@ def write_header(filename, guard, ns, cls):
             print(data, file=outfile)
 
 
-def write_class(filename, header, namespaces, classname):
+def write_classfile(filename, header, namespaces, classname):
     data = '\n'.join([
         '#include <{}>',
         '{}',
@@ -106,18 +119,16 @@ def write_class(filename, header, namespaces, classname):
 
 
 def ns_header(namespaces):
-    header = '\n' if namespaces else ''
-    header += '\n'.join(['namespace ' + ns + ' {' for ns in namespaces])
+    header = '\n'.join(['namespace ' + ns + ' {' for ns in namespaces])
     if namespaces:
-        header += '\n'
+        header = '\n{}\n'.format(header)
     return header
 
 
 def ns_footer(namespaces):
-    footer = '\n' if namespaces else ''
-    footer += '\n'.join(['} // close namespace ' + ns for ns in reversed(namespaces)])
+    footer = '\n'.join(['} // close namespace ' + ns for ns in reversed(namespaces)])
     if namespaces:
-        footer += '\n'
+        footer = '\n{}\n'.format(footer)
     return footer
 
 
@@ -131,6 +142,16 @@ def class_def(classname):
         '    // TODO',
         '{};'
     ]).format(classname, '{', '}')
+
+
+def get_relative_path(dirname, path):
+    if dirname not in path:
+        return None
+    dirs = []
+    while dirname != os.path.basename(path):
+        dirs.append(os.path.basename(path))
+        path = os.path.dirname(path)
+    return os.path.join(*reversed(dirs))
 
 
 if __name__ == '__main__':
