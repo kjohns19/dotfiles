@@ -9,6 +9,3 @@ alias egrep='egrep --color=auto'
 # prompt before overwriting for mv and cp
 alias mv='mv -i'
 alias cp='cp -i'
-
-# Add git aliases to path
-export PATH=$PATH:~/bin/gitaliases
