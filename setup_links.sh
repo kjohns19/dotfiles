@@ -24,15 +24,18 @@ link_config() {
 
 link_dir() {
     local dest
+    local dir
     dest="$DEST/$2"
 
     echo "$1:"
     mkdir -p "$dest"
 
+    dir=$(pwd)
     cd "$1"
     for file in *; do
         [ -f "$file" ] && try_ln "$SRC/$1/$file" "$dest/$file"
     done
+    cd "$dir"
 }
 
 echo "Setting up symlinks from $SRC to $DEST"
@@ -45,3 +48,5 @@ link_config gitconfig
 link_config tmux.conf
 
 link_dir bash .bash
+link_dir bin bin
+link_dir git bin/git
