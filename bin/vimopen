@@ -7,12 +7,53 @@
 #   Compare file1 with file2 and file3 with file4
 #       vimopen 'file1|file2|-d' 'file3|file4|-d'
 
-vimargs=()
-while [[ "$1" == -* ]]; do
-    [[ "$1" == -- ]] && shift && break
-    vimargs+=("$1")
-    shift
+ME=$(basename "$0")
+
+usageline() {
+    echo "Usage $ME [OPTIONS] TAB..."
+}
+
+usage() {
+    usageline
+    echo "Run '$ME --help' for more information"
+    exit $1
+}
+
+fullusage() {
+    usageline
+    echo "Open files in multiple tabs and splits in vim" 
+    echo "Options:"
+    echo "-h, --help        Show this help and exit"
+    echo "-a, --vimarg=ARG  Send ARG as an option to vim"
+    echo
+    echo "A new tab is opened for each TAB argument."
+    echo "A TAB consists of one or more files separated by a '|' character,"
+    echo "and can end in a list of options."
+    echo "The files are opened in different splits in the tab."
+    echo "Options:"
+    echo " -d  Compare the files in this tab using diff"
+    echo "Examples: file, fileA|fileB, fileA|fileB|-d"
+    exit $1
+}
+
+opts=$(getopt -o ha: -l help,vimarg: -- "$@")
+[ $? -ne 0 ] && usage 2
+eval set -- "$opts"
+
+while true; do
+    case "$1" in
+        -h | --help)
+            fullusage;;
+        -a | --vimarg)
+            vimargs+=("$2"); shift 2;;
+        --)
+            shift; break;;
+        *)
+            break;;
+    esac
 done
+
+[[ $# -eq 0 ]] && usage 2
 
 # ' ' to '\ ' for vim
 function fixfile() {

@@ -72,4 +72,4 @@ response=y
 [[ "$response" = n ]] && exit
 
 # Run vim
-vimopen -R "${allfiles[@]}"
+vimopen --vimarg -R "${allfiles[@]}"
