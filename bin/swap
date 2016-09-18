@@ -6,7 +6,7 @@ if [ "$1" == -f ]; then
 fi
 
 if [ $# -ne 2 ]; then
-    echo "Usage: $0 [-f] file1 file2" >&2
+    echo "Usage: $(basename "$0") [-f] file1 file2" >&2
     exit 1
 fi
 
