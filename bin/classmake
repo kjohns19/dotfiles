@@ -151,7 +151,7 @@ def get_relative_path(dirname, path):
     while dirname != os.path.basename(path):
         dirs.append(os.path.basename(path))
         path = os.path.dirname(path)
-    return os.path.join(*reversed(dirs))
+    return os.path.join(*reversed(dirs)) if dirs else None
 
 
 if __name__ == '__main__':
