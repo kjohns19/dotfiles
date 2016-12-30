@@ -19,9 +19,10 @@ done
 [ -n "$errors" ] && [ -z "$force" ] && exit 2
 
 tmp=$(mktemp -d --tmpdir=$(dirname $1))
+tmpfile="$tmp/$(basename "$1")"
 
-[ -f "$1" ]      && mv $1 $tmp
-[ -f "$2" ]      && mv $2 $1
-[ -f "$tmp/$1" ] && mv $tmp/$1 $2
+[ -f "$1" ]       && mv "$1" "$tmpfile"
+[ -f "$2" ]       && mv "$2" "$1"
+[ -f "$tmpfile" ] && mv "$tmpfile" "$2"
 
 rm -r $tmp
