@@ -77,13 +77,18 @@ let mapleader="\<C-k>"
 " different color past 100 characters
 let &colorcolumn=join(range(100, 500),",")
 
+highlight UnwantedWS guibg=red
+match UnwantedWS /\s\+$\|\t/
+au WinEnter * match UnwantedWS /\s\+$\|\t/
+
 syn on
 
 " colorscheme setup
 let g:jellybeans_overrides = {
-\    'ColorColumn': { 'guibg': '242424', 'ctermbg': 234 },
-\    'Search':      { 'guifg': 'f0a0c0', 'ctermfg': 'Magenta', 'gui': 'underline' },
-\    'Special':     { 'guifg': '397d3a', 'ctermfg': 'Green' }
+\    'ColorColumn': { 'guibg': '242424' },
+\    'UnwantedWS':  { 'guibg': '2c2c2c' },
+\    'Search':      { 'guifg': 'f0a0c0', 'gui': 'underline' },
+\    'Special':     { 'guifg': '397d3a' }
 \}
 colorscheme jellybeans
 
