@@ -11,3 +11,4 @@
     dt = difftool
     tree = log --graph --decorate --oneline
     stat = log --numstat --decorate --oneline
+    dac = da --cached
