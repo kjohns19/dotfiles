@@ -100,6 +100,9 @@ nnoremap k gk
 nnoremap gk k
 nnoremap gj j
 
+nnoremap <Leader>i K
+nnoremap K <nop>
+
 autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 " search for entire words (i.e. 'foo' will find 'foo' but not 'foobar' or 'barfoo')
 nnoremap <Leader>v /\<\><left><left>
