@@ -27,7 +27,7 @@ if [[ "$1" = -f ]]; then
 fi
 
 # Get list of files to diff
-files=$(git difftool --extcmd="$cmd" --noprompt "$@") || exit $?
+files=$(git difftool --extcmd="$cmd" --no-prompt "$@") || exit $?
 [[ -z $files ]] && exit
 
 
