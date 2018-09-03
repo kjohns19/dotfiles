@@ -12,6 +12,7 @@ Plugin 'mileszs/ack.vim'
 Plugin 'scrooloose/syntastic'
 Plugin 'nanotech/jellybeans.vim'
 Plugin 'airblade/vim-gitgutter'
+Plugin 'nvie/vim-flake8'
 call vundle#end()
 filetype plugin on
 
@@ -27,6 +28,9 @@ let g:syntastic_cpp_compiler_options = '-std=c++14 -Wall '
     \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", '', '')
 let g:syntastic_loc_list_height = 5
 let g:syntastic_python_python_exec = '/usr/bin/python3'
+
+" flake8 settings
+let g:flake8_show_in_gutter=1
 
 " 256 colors
 set t_Co=256
