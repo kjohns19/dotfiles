@@ -127,10 +127,10 @@ nnoremap <Leader>c :lcd %:p:h<CR>
 nnoremap <Leader>C :cd %:p:h<CR>
 
 " search with ack
-nnoremap <Leader>s :Ack! <cword><CR>
-nnoremap <Leader>S :Ack! --type-add hh:ext:hpp --hh <cword><CR>
-nnoremap <Leader>a :Ack! 
-nnoremap <Leader>A :Ack! --type-add hh:ext:hpp --hh 
+nnoremap <Leader>s :Ack! "\b<cword>\b"<CR>
+nnoremap <Leader>S :Ack! --type-add hh:ext:hpp --hh "\b<cword>\b"<CR>
+nnoremap <Leader>a :Ack! "\b\b"<left><left><left>
+nnoremap <Leader>A :Ack! --type-add hh:ext:hpp --hh "\b\b"<left><left><left>
 
 " next/previous change
 nmap <Leader><C-j> <Plug>GitGutterNextHunk
