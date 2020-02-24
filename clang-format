@@ -1,0 +1,28 @@
+BasedOnStyle: LLVM
+
+Language: Cpp
+AllowShortFunctionsOnASingleLine: Empty
+AlignAfterOpenBracket: AlwaysBreak
+AlwaysBreakTemplateDeclarations: true
+BasedOnStyle: LLVM
+BraceWrapping:
+    AfterCaseLabel: true
+    AfterClass: true
+    AfterControlStatement: true
+    AfterEnum: true
+    AfterFunction: true
+    AfterNamespace: false
+    AfterStruct: true
+    AfterUnion: true
+    AfterExternBlock: true
+    BeforeCatch: true
+    BeforeElse: true
+    IndentBraces: false
+BreakBeforeBraces: Custom
+ColumnLimit: 100
+FixNamespaceComments: false
+IndentWidth: 4
+PenaltyReturnTypeOnItsOwnLine: 1000
+SpaceAfterTemplateKeyword: false
+SpacesBeforeTrailingComments: 2
+Standard: Auto

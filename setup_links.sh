@@ -41,11 +41,13 @@ link_dir() {
 echo "Setting up symlinks from $SRC to $DEST"
 
 echo "Configs:"
-link_config vimrc
-link_config bashrc
 link_config bash_profile
+link_config bashrc
+link_config clang-format
+link_config flake8
 link_config gitconfig
 link_config tmux.conf
+link_config vimrc
 
 link_dir bash .bash
 link_dir bin bin
