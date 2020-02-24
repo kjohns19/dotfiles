@@ -21,11 +21,13 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 0
 let g:syntastic_check_on_wq = 0
-let g:syntastic_cpp_check_header = 1
+let g:syntastic_cpp_check_header = 0
 let g:syntastic_cpp_checkers = ['gcc']
 let g:syntastic_cpp_compiler = 'g++'
 let g:syntastic_cpp_compiler_options = '-std=c++14 -Wall '
     \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", '', '')
+let g:syntastic_c_compiler = 'gcc'
+let g:syntastic_c_compiler_options = '-std=c11 -Wall'
 let g:syntastic_loc_list_height = 5
 let g:syntastic_python_python_exec = '/usr/bin/python3'
 
@@ -131,6 +133,16 @@ nnoremap <Leader>s :Ack! "\b<cword>\b"<CR>
 nnoremap <Leader>S :Ack! --type-add hh:ext:hpp --hh "\b<cword>\b"<CR>
 nnoremap <Leader>a :Ack! "\b\b"<left><left><left>
 nnoremap <Leader>A :Ack! --type-add hh:ext:hpp --hh "\b\b"<left><left><left>
+
+function! ClangFormatAll()
+    let l:lines="all"
+    py3file /usr/share/clang/clang-format-9/clang-format.py
+endfunction
+function! ClangFormat()
+    py3file /usr/share/clang/clang-format-9/clang-format.py
+endfunction
+nmap <Leader>o :call ClangFormatAll()<cr>
+vmap <Leader>o :call ClangFormat()<cr>
 
 " next/previous change
 nmap <Leader><C-j> <Plug>GitGutterNextHunk
