@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
-import re
-import os
 import errno
+import os
+import re
+
 
 def main():
     args = parse_args()
@@ -24,10 +25,11 @@ def parse_args():
         help='Make directories for namespaces (e.g. foo/bar/)')
     parser.add_argument(
         '-s', '--srcdir', action='store', default='src',
-        help='Include the header file relative to this upper directory ' +
-             '(e.g. if set to \'src\' and creating \'/code/src/foo/bar/baz.hpp\', ' +
-             'the header will be included as: \'#include <foo/bar/baz.hpp>). ' +
-             'Defaults to \'src\'. If the upper directory is not found no path is added to the include')
+        help='Include the header file relative to this upper directory '
+             '(e.g. if set to \'src\' and creating \'/code/src/foo/bar/baz.hpp\', '
+             'the header will be included as: \'#include <foo/bar/baz.hpp>). '
+             'Defaults to \'src\'. If the upper directory is not found, '
+             'no path is added to the include')
     parser.add_argument(
         'classes', action='store', nargs='*',
         help='Classes to make. May contain namespaces')
@@ -40,6 +42,7 @@ def parse_class(cls, all_namespaces):
     classname = cls_split[-1]
     namespaces += cls_split[0:-1]
     return classname, namespaces
+
 
 def make_class(classname, namespaces, args):
     namespace_snake = '_'.join([ns.upper() for ns in namespaces])
@@ -72,10 +75,13 @@ def make_class(classname, namespaces, args):
 class NoFile:
     def __bool__():
         return False
+
     def __enter__(self):
         pass
+
     def __exit__(self, type, value, tb):
         pass
+
 
 def openNew(filename):
     try:
@@ -89,6 +95,7 @@ def openNew(filename):
             raise
     else:
         return os.fdopen(fh, 'w')
+
 
 def write_headerfile(filename, guard, ns, cls):
     data = '\n'.join([
