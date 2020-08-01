@@ -29,7 +29,8 @@ def main():
     dirs = [
         ('bash', '.bash'),
         ('bin', 'bin'),
-        ('git', 'bin/git')
+        ('git', 'bin/git'),
+        ('vim/ftplugin', '.vim/ftplugin')
     ]
     for srcname, destname in dirs:
         make_dir(root.joinpath(srcname), args.directory.joinpath(destname),

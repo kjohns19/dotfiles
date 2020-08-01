@@ -134,15 +134,26 @@ nnoremap <Leader>S :Ack! --type-add hh:ext:hpp --hh "\b<cword>\b"<CR>
 nnoremap <Leader>a :Ack! "\b\b"<left><left><left>
 nnoremap <Leader>A :Ack! --type-add hh:ext:hpp --hh "\b\b"<left><left><left>
 
-function! ClangFormatAll()
-    let l:lines="all"
-    py3file /usr/share/clang/clang-format-9/clang-format.py
+" Formatter (see ftplugin/<filetype>.vim for the per-filetype functions)
+" Default functions that do nothing (no formatter for the current filetype)
+function s:FileFormatFuncDefault()
+    " do nothing
 endfunction
-function! ClangFormat()
-    py3file /usr/share/clang/clang-format-9/clang-format.py
+function s:FileFormatRangeFuncDefault() range
+    " do nothing
 endfunction
-nmap <Leader>o :call ClangFormatAll()<cr>
-vmap <Leader>o :call ClangFormat()<cr>
+autocmd BufRead,BufNewFile *
+    \ if !exists('b:FileFormatFunc') |
+    \   let b:FileFormatFunc = function('<SID>FileFormatFuncDefault') |
+    \ endif
+autocmd BufRead,BufNewFile *
+    \ if !exists('b:FileFormatRangeFunc') |
+    \   let b:FileFormatRangeFunc = function('<SID>FileFormatRangeFuncDefault') |
+    \ endif
+
+" In normal mode, format the whole file. In visual mode, format the selection
+nnoremap <Leader>o :call b:FileFormatFunc()<CR>
+vnoremap <Leader>o :call b:FileFormatRangeFunc()<CR>
 
 " next/previous change
 nmap <Leader><C-j> <Plug>GitGutterNextHunk
