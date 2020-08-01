@@ -18,6 +18,7 @@ def main():
             'clang-format',
             'flake8',
             'gitconfig',
+            'inputrc',
             'tmux.conf',
             'vimrc'
         ]
