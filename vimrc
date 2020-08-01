@@ -165,6 +165,9 @@ nmap <Leader><C-k> <Plug>GitGutterPrevHunk
 " reload vimrc
 nmap <Leader>r :so ~/.vimrc<CR>
 
+" store swapfiles here (// will make it use the complete path in the name for uniqueness)
+set directory=$HOME/.vim/swapfiles//
+
 " simple gui
 set guioptions-=m        " remove menu bar
 set guioptions-=T        " remove toolbar

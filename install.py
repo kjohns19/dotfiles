@@ -30,7 +30,8 @@ def main():
         ('bash', '.bash'),
         ('bin', 'bin'),
         ('git', 'bin/git'),
-        ('vim/ftplugin', '.vim/ftplugin')
+        ('vim/ftplugin', '.vim/ftplugin'),
+        ('vim/swapfiles', '.vim/swapfiles')
     ]
     for srcname, destname in dirs:
         make_dir(root.joinpath(srcname), args.directory.joinpath(destname),
@@ -60,7 +61,8 @@ def make_dir(src, dest, dryrun=False):
     if not dryrun:
         dest.mkdir(parents=True, exist_ok=True)
     for f in src.glob('*'):
-        make_link(f, dest.joinpath(f.name), dryrun=dryrun, indent=1)
+        if f.name != 'dummy':
+            make_link(f, dest.joinpath(f.name), dryrun=dryrun, indent=1)
 
 
 def make_link(src, dest, dryrun=False, indent=0):
