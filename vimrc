@@ -17,6 +17,9 @@ call vundle#end()
 filetype plugin on
 
 " syntastic settings
+let g:syntastic_mode_map = {
+    \ "mode": "passive",
+    \ "active_filetypes": ["c", "cpp"]}
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 0
@@ -24,7 +27,7 @@ let g:syntastic_check_on_wq = 0
 let g:syntastic_cpp_check_header = 0
 let g:syntastic_cpp_checkers = ['gcc']
 let g:syntastic_cpp_compiler = 'g++'
-let g:syntastic_cpp_compiler_options = '-std=c++14 -Wall '
+let g:syntastic_cpp_compiler_options = '-std=c++17 -Wall '
     \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", '', '')
 let g:syntastic_c_compiler = 'gcc'
 let g:syntastic_c_compiler_options = '-std=c11 -Wall'
