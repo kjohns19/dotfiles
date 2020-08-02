@@ -89,8 +89,8 @@ set_ps1() {
     printf "$PROMPTFMT" ${PROMPTARGS[@]}
 
     # Prompt: a yellow arrow
-    PS1="$YELLOW⇒ $NONE"
-    PS2="$YELLOW↳ $NONE"
+    PS1="\[$YELLOW\]⇒ \[$NONE\]"
+    PS2="\[$YELLOW\]↳ \[$NONE\]"
     _command_start=
 }
 __set_command_start
