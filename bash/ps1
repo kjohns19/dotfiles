@@ -41,38 +41,55 @@ set_ps1() {
     local DATE=$(date +"%H:%M:%S")
     local JOBS=$(jobs -rp | wc -l)
     local BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
+    local USER=$(whoami)
+    local HOST=$(hostname)
+    local CWD=$(dirs +0)  # dirs uses ~ for home directory unlike pwd
 
     # Colors
-    local RED="\[\033[0;31m\]"
-    local BLUE="\[\033[1;34m\]"
-    local GREEN="\[\033[0;32m\]"
-    local LIGHTRED="\[\033[1;31m\]"
-    local PURPLE="\[\033[0;95m\]"
-    local YELLOW="\[\033[1;33m\]"
-    local NONE="\[\033[0m\]"
+    local RED="\033[0;31m"
+    local BLUE="\033[1;34m"
+    local GREEN="\033[0;32m"
+    local LIGHTRED="\033[1;31m"
+    local PURPLE="\033[0;95m"
+    local YELLOW="\033[1;33m"
+    local NONE="\033[0m"
 
     # Start on new line
-    PS1="\n"
+    local PROMPTFMT="\n"
+    local PROMPTARGS=()
 
     # Time of last command
-    PS1+="$PURPLE$DATE $LIGHTRED$TIME "
+    PROMPTFMT+="$PURPLE%s $LIGHTRED%s "
+    PROMPTARGS+=("$DATE" "$TIME")
 
     # user@host workingdir
-    PS1+="$BLUE\u@\h $GREEN\w"
+    PROMPTFMT+="$BLUE%s@%s $GREEN%s"
+    PROMPTARGS+=("$USER" "$HOST" "$CWD")
 
     # Current git branch
-    [ -n "$BRANCH" ] && PS1+=" $LIGHTRED($BRANCH)"
+    if [[ -n "$BRANCH" ]]; then
+        PROMPTFMT+=" $LIGHTRED(%s)"
+        PROMPTARGS+=("$BRANCH")
+    fi
 
     # Show number of jobs if > 0
-    [ $JOBS -gt 0 ] && PS1+=" $YELLOW$JOBS"
+    if [[ "$JOBS" -gt 0 ]]; then
+        PROMPTFMT+=" $YELLOW%s"
+        PROMPTARGS+=("$JOBS")
+    fi
 
     # Show exit status of last command if != 0
-    [ $EXIT != 0 ] && PS1+=" $RED$EXIT"
+    if [[ "$EXIT" -ne 0 ]]; then
+        PROMPTFMT+=" $RED%s"
+        PROMPTARGS+=("$EXIT")
+    fi
 
-    PS1+="\n"
+    PROMPTFMT+="\n$NONE"
+
+    printf "$PROMPTFMT" ${PROMPTARGS[@]}
 
     # Prompt: a yellow arrow
-    PS1+="$YELLOW⇒ $NONE"
+    PS1="$YELLOW⇒ $NONE"
     PS2="$YELLOW↳ $NONE"
     _command_start=
 }
