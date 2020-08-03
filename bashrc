@@ -4,3 +4,4 @@
 . ~/.bash/base
 . ~/.bash/ps1
 . ~/.bash/aliases
+. ~/.bash/start_tmux
