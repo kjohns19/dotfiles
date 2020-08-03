@@ -24,7 +24,7 @@ def main():
         ]
     ]
     for srcname, destname in links:
-        make_link(root.joinpath(srcname), args.directory.joinpath(destname),
+        make_link(root, root.joinpath(srcname), args.directory.joinpath(destname),
                   dryrun=args.dryrun)
 
     dirs = [
@@ -35,7 +35,7 @@ def main():
         ('vim/swapfiles', '.vim/swapfiles')
     ]
     for srcname, destname in dirs:
-        make_dir(root.joinpath(srcname), args.directory.joinpath(destname),
+        make_dir(root, root.joinpath(srcname), args.directory.joinpath(destname),
                  dryrun=args.dryrun)
 
 
@@ -55,26 +55,25 @@ def parse_args():
     return args
 
 
-def make_dir(src, dest, dryrun=False):
-    print(f'Installing {src} to {dest}')
+def make_dir(root, src, dest, dryrun=False):
+    print(f'{src.relative_to(root)} => {dest}')
     if (dest.is_symlink() or dest.exists()) and not dest.is_dir():
         backup(dest, dryrun=dryrun, indent=1)
     if not dryrun:
         dest.mkdir(parents=True, exist_ok=True)
     for f in src.glob('*'):
         if f.name != 'dummy':
-            make_link(f, dest.joinpath(f.name), dryrun=dryrun, indent=1)
+            make_link(root, f, dest.joinpath(f.name), dryrun=dryrun, indent=1)
 
 
-def make_link(src, dest, dryrun=False, indent=0):
+def make_link(root, src, dest, dryrun=False, indent=0):
     tabs = '  ' * indent
-    print(f'{tabs}Installing {src} to {dest}')
+    print(f'{tabs}{src.relative_to(root)} => {dest}')
     directory = dest.parent
     if not dryrun:
         directory.mkdir(parents=True, exist_ok=True)
     if dest.is_symlink() or dest.exists():
         if dest.is_symlink() and os.readlink(dest) == str(src):
-            print(f'{tabs}  {dest} already points to {src}')
             return
         else:
             backup(dest, dryrun=dryrun, indent=indent+1)
