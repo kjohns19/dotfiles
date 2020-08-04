@@ -159,8 +159,8 @@ nnoremap <Leader>o :call b:FileFormatFunc()<CR>
 vnoremap <Leader>o :call b:FileFormatRangeFunc()<CR>
 
 " next/previous change
-nmap <Leader><C-j> <Plug>GitGutterNextHunk
-nmap <Leader><C-k> <Plug>GitGutterPrevHunk
+nmap <Leader><C-j> <Plug>(GitGutterNextHunk)
+nmap <Leader><C-k> <Plug>(GitGutterPrevHunk)
 
 " reload vimrc
 nmap <Leader>r :so ~/.vimrc<CR>
