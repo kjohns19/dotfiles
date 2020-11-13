@@ -72,6 +72,12 @@ set_ps1() {
         PROMPTARGS+=("$BRANCH")
     fi
 
+    # Show python virtual environment
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        PROMPTFMT+=" $PURPLE%s"
+        PROMPTARGS+=("${VIRTUAL_ENV/#$HOME/'~'}")
+    fi
+
     # Show number of jobs if > 0
     if [[ "$JOBS" -gt 0 ]]; then
         PROMPTFMT+=" $YELLOW%s"
