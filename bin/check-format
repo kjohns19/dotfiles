@@ -1,0 +1,83 @@
+#!/usr/bin/env python3.8
+
+import argparse
+import functools
+import pathlib
+import subprocess
+import sys
+from typing import List
+
+
+def main(argv):
+    args = parse_args(argv)
+
+    rcode = 0
+
+    for filearg in args.files:
+        files = get_files(filearg, args.extensions)
+        for file in files:
+            if needs_reformatting(file):
+                print_red(f'{file} needs formatting')
+                rcode = 1
+            else:
+                print(file)
+
+    sys.exit(rcode)
+
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'files', type=pathlib.Path, nargs='*',
+        help='Files or directories to check. '
+             'If not given, default to current directory')
+
+    parser.add_argument(
+        '-e', '--extensions', default=', '.join(['.cpp', '.hpp', '.c', '.h']),
+        help='Comma-separated list of file extensions to search for. '
+             'Defaults to: %(default)s')
+
+    args = parser.parse_args()
+
+    if not args.files:
+        args.files = [pathlib.Path.cwd()]
+    args.extensions = [ext.strip() for ext in args.extensions.split(',')]
+
+    return args
+
+
+def print_red(message, **kwargs):
+    red = tput_str('setaf', '1')
+    none = tput_str('sgr0')
+    print(f'{red}{message}{none}', **kwargs)
+
+
+@functools.lru_cache()
+def tput_str(*args: str) -> str:
+    command = ['tput', *args]
+    return subprocess.run(command, check=True, capture_output=True, text=True).stdout
+
+
+def get_files(file: pathlib.Path, extensions) -> List[pathlib.Path]:
+    if file.is_dir():
+        return [
+            file
+            for subfile in file.iterdir()
+            for file in get_files(subfile, extensions)
+        ]
+    elif file.is_file() and file.suffix in extensions:
+        return [file]
+    else:
+        return []
+
+
+def needs_reformatting(file: pathlib.Path) -> bool:
+    formatter = '/usr/bin/clang-format-10'
+    proc = subprocess.run([formatter, '--dry-run', '-Werror', file],
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
+    return proc.returncode != 0
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
