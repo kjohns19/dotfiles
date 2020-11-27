@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 
 import argparse
 import errno
@@ -104,7 +104,7 @@ def write_headerfile(filename, guard, ns, cls):
         '{}',
         '{}',
         '{}',
-        '#endif // {}'
+        '#endif  // {}'
     ]).format(guard, guard, ns_header(ns), class_def(cls), ns_footer(ns), guard)
 
     with openNew(filename) as outfile:
@@ -122,7 +122,7 @@ def write_classfile(filename, header, namespaces, classname):
 
     with openNew(filename) as outfile:
         if outfile:
-            print(data, file=outfile)
+            print(data, file=outfile, end='')
 
 
 def ns_header(namespaces):
@@ -133,7 +133,7 @@ def ns_header(namespaces):
 
 
 def ns_footer(namespaces):
-    footer = '\n'.join(['} // close namespace ' + ns for ns in reversed(namespaces)])
+    footer = '\n'.join(['}  // close namespace ' + ns for ns in reversed(namespaces)])
     if namespaces:
         footer = '\n{}\n'.format(footer)
     return footer
@@ -143,9 +143,10 @@ def class_def(classname):
     return '\n'.join([
         'class {}',
         '{}',
-        'public:',
+        '  public:',
         '    // TODO',
-        'private:',
+        '',
+        '  private:',
         '    // TODO',
         '{};'
     ]).format(classname, '{', '}')
