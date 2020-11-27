@@ -13,6 +13,7 @@ def main():
     links = [
         (l, '.' + l)
         for l in [
+            'ackrc',
             'bash_profile',
             'bashrc',
             'clang-format',
