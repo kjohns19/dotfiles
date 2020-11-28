@@ -14,7 +14,7 @@ def main(argv):
     rcode = 0
 
     for filearg in args.files:
-        files = get_files(filearg, args.extensions)
+        files = get_files(filearg, args.extensions, args.ignore_dirs)
         for file in files:
             if needs_reformatting(file):
                 print_red(f'{file} needs formatting')
@@ -37,6 +37,10 @@ def parse_args(argv):
         help='Comma-separated list of file extensions to search for. '
              'Defaults to: %(default)s')
 
+    parser.add_argument(
+        '--ignore-dirs', default=['CMakeFiles', '.git'], nargs='*',
+        help='Ignore a directory. Can specify multiple times. Defaults to %(default)s')
+
     args = parser.parse_args()
 
     if not args.files:
@@ -58,12 +62,15 @@ def tput_str(*args: str) -> str:
     return subprocess.run(command, check=True, capture_output=True, text=True).stdout
 
 
-def get_files(file: pathlib.Path, extensions) -> List[pathlib.Path]:
+def get_files(file: pathlib.Path, extensions: List[str],
+              ignore_dirs: List[str]) -> List[pathlib.Path]:
     if file.is_dir():
+        if file.name in ignore_dirs:
+            return []
         return [
             file
             for subfile in file.iterdir()
-            for file in get_files(subfile, extensions)
+            for file in get_files(subfile, extensions, ignore_dirs)
         ]
     elif file.is_file() and file.suffix in extensions:
         return [file]
