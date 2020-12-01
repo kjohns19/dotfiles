@@ -11,16 +11,30 @@ from typing import List
 def main(argv):
     args = parse_args(argv)
 
+    tty = sys.stdout.isatty()
+
     rcode = 0
 
     for filearg in args.files:
         files = get_files(filearg, args.extensions, args.ignore_dirs)
+        prev = ''
         for file in files:
+            if tty:
+                print(f'\r{prev}\r{file}', end='')
             if needs_reformatting(file):
-                print_red(f'{file} needs formatting')
+                if tty:
+                    print_red(f'\r{file} needs formatting')
+                else:
+                    print(f'{file} needs formatting')
+                prev = ''
                 rcode = 1
             else:
-                print(file)
+                prev = ' ' * len(str(file))
+                if not tty:
+                    print(file)
+
+    if tty:
+        print(f'\r{prev}', end='')
 
     sys.exit(rcode)
 
