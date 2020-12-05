@@ -3,12 +3,63 @@
 import argparse
 import functools
 import pathlib
+import queue
 import subprocess
 import sys
+import threading
 from typing import List
 
 
 def main(argv):
+    args = parse_args(argv)
+
+    rcode = 0
+
+    in_queue = queue.Queue()
+    out_queue = queue.Queue()
+
+    def worker_thread():
+        while True:
+            filename = in_queue.get()
+            if filename is None:
+                break
+            if needs_reformatting(filename):
+                out_queue.put(filename)
+
+    workers = [threading.Thread(target=worker_thread) for _ in range(4)]
+
+    all_files = []
+    for filearg in args.files:
+        for filename in get_files(filearg, args.extensions, args.ignore_dirs):
+            in_queue.put(filename)
+            all_files.append(filename)
+
+    print(f'Checking {len(all_files)} files...')
+
+    for worker in workers:
+        in_queue.put(None)
+        worker.start()
+
+    for worker in workers:
+        worker.join()
+
+    fileset = set()
+    while True:
+        try:
+            filename = out_queue.get(block=False)
+        except queue.Empty:
+            break
+        fileset.add(filename)
+        rcode += 1
+
+    for filename in all_files:
+        if filename in fileset:
+            print_red(f'{filename} needs formatting')
+
+    sys.exit(rcode)
+
+
+def old_main(argv):
     args = parse_args(argv)
 
     tty = sys.stdout.isatty()
