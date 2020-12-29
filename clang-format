@@ -1,8 +1,9 @@
 BasedOnStyle: LLVM
 
 Language: Cpp
-AllowShortFunctionsOnASingleLine: Empty
 AlignAfterOpenBracket: AlwaysBreak
+AlignEscapedNewlines: Left
+AllowShortFunctionsOnASingleLine: Empty
 AlwaysBreakTemplateDeclarations: true
 BasedOnStyle: LLVM
 BraceWrapping:
