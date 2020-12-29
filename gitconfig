@@ -1,8 +1,8 @@
 [user]
     email = krjohnson111@gmail.com
     name = Kevin Johnson
-[credential "https://github.com"]
-    username = kjohns19
+[credential]
+    helper = store
 [push]
     default = simple
 [diff]
