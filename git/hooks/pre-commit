@@ -1,0 +1,25 @@
+#!/usr/bin/env python3.8
+
+import subprocess
+from typing import List
+
+
+def main():
+    files = get_staged_files()
+    check_format(files)
+
+
+def get_staged_files() -> List[str]:
+    proc = subprocess.run(['git', 'diff', '--name-only', '--cached'],
+                          check=True, capture_output=True, text=True)
+    return proc.stdout.strip().split('\n')
+
+
+def check_format(files: List[str]):
+    if not files:
+        return
+    subprocess.run(['check-format', '-q'] + files)
+
+
+if __name__ == '__main__':
+    main()

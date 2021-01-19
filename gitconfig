@@ -1,3 +1,5 @@
+[core]
+    hooksPath = ~/.git/hooks
 [user]
     email = krjohnson111@gmail.com
     name = Kevin Johnson

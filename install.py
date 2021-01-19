@@ -31,7 +31,8 @@ def main():
     dirs = [
         ('bash', '.bash'),
         ('bin', 'bin'),
-        ('git', 'bin/git'),
+        ('git/bin', 'bin/git'),
+        ('git/hooks', '.git/hooks'),
         ('vim/ftplugin', '.vim/ftplugin'),
         ('vim/swapfiles', '.vim/swapfiles')
     ]

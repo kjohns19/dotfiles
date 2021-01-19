@@ -34,7 +34,8 @@ def main(argv):
             in_queue.put(filename)
             all_files.append(filename)
 
-    print(f'Checking {len(all_files)} files...')
+    if not args.quiet:
+        print(f'Checking {len(all_files)} files...')
 
     for worker in workers:
         in_queue.put(None)
@@ -105,6 +106,10 @@ def parse_args(argv):
     parser.add_argument(
         '--ignore-dirs', default=['CMakeFiles', '.git'], nargs='*',
         help='Ignore a directory. Can specify multiple times. Defaults to %(default)s')
+
+    parser.add_argument(
+        '-q', '--quiet', action='store_true',
+        help='Don\'t print the "Checking <num> files..." text')
 
     args = parser.parse_args()
 
