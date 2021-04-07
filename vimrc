@@ -94,11 +94,15 @@ syn on
 
 " colorscheme setup
 let g:jellybeans_overrides = {
-\    'ColorColumn': { 'guibg': '242424' },
-\    'UnwantedWS':  { 'guibg': '2c2c2c' },
-\    'Search':      { 'guifg': 'f0a0c0', 'gui': 'underline' },
-\    'Special':     { 'guifg': '397d3a' }
+\    'ColorColumn':     { 'guibg': '242424' },
+\    'UnwantedWS':      { 'guibg': '2c2c2c' },
+\    'Search':          { 'guifg': 'f0a0c0', 'gui': 'underline' },
+\    'GitGutterDelete': { 'guifg': 'f00000' },
+\    'Special':         { 'guifg': '397d3a' }
 \}
+
+let g:gitgutter_set_sign_backgrounds = 1  " Match the gutter background color
+
 colorscheme jellybeans
 
 set omnifunc=syntaxcomplete#Complete
