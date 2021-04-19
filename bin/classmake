@@ -45,16 +45,10 @@ def parse_class(cls, all_namespaces):
 
 
 def make_class(classname, namespaces, args):
-    namespace_snake = '_'.join([ns.upper() for ns in namespaces])
-    if namespaces:
-        namespace_snake += '_'
-    snake_name = '_'.join([s.upper() for s in re.findall(r'[A-Z][^A-Z]*', classname)])
-    snake_lower = snake_name.lower()
+    snake_name = '_'.join([s.lower() for s in re.findall(r'[A-Z][^A-Z]*', classname)])
 
-    guard = 'INCLUDED_{}{}_HPP'.format(namespace_snake, snake_name)
-
-    headerfile = '{}.hpp'.format(snake_lower)
-    classfile = '{}.cpp'.format(snake_lower)
+    headerfile = '{}.hpp'.format(snake_name)
+    classfile = '{}.cpp'.format(snake_name)
 
     if args.mkdirs and namespaces:
         path = os.path.join(*namespaces)
@@ -68,7 +62,7 @@ def make_class(classname, namespaces, args):
         if relative_path:
             includefile = os.path.join(relative_path, headerfile)
 
-    write_headerfile(headerfile, guard, namespaces, classname)
+    write_headerfile(headerfile, namespaces, classname)
     write_classfile(classfile, includefile, namespaces, classname)
 
 
@@ -97,19 +91,17 @@ def openNew(filename):
         return os.fdopen(fh, 'w')
 
 
-def write_headerfile(filename, guard, ns, cls):
+def write_headerfile(filename, ns, cls):
     data = '\n'.join([
-        '#ifndef {}',
-        '#define {}',
-        '{}',
-        '{}',
-        '{}',
-        '#endif  // {}'
-    ]).format(guard, guard, ns_header(ns), class_def(cls), ns_footer(ns), guard)
+        '#pragma once',
+        ns_header(ns),
+        class_def(cls),
+        ns_footer(ns)
+    ])
 
     with openNew(filename) as outfile:
         if outfile:
-            print(data, file=outfile)
+            print(data, file=outfile, end='')
 
 
 def write_classfile(filename, header, namespaces, classname):
