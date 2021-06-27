@@ -12,7 +12,7 @@ def main():
 def get_staged_files() -> List[str]:
     proc = subprocess.run(['git', 'diff', '--name-only', '--cached'],
                           check=True, capture_output=True, text=True)
-    return proc.stdout.strip().split('\n')
+    return [f for f in proc.stdout.strip().split('\n') if f]
 
 
 def check_format(files: List[str]):
