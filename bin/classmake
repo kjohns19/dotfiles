@@ -1,6 +1,9 @@
 #!/usr/bin/env python3.9
 
+''' Create header (.hpp) and implementation (.cpp) files for C++ classes '''
+
 import argparse
+import dataclasses
 import errno
 import os
 import pathlib
@@ -9,42 +12,57 @@ import textwrap
 import typing as t
 
 
+@dataclasses.dataclass
+class ClassInfo:
+    name: str
+    namespaces: list[str]
+
+
 def main() -> None:
     args = parse_args()
 
-    for classname in args.classes:
-        classname, namespaces = parse_class(classname, args.namespaces)
-        make_class(classname, namespaces, args.mkdirs, args.srcdir)
+    for class_info in args.classes:
+        namespaces = args.namespaces + class_info.namespaces
+        make_class(class_info.name, namespaces, args.mkdirs, args.srcdir)
 
 
 def parse_args() -> argparse.Namespace:
-    desc = 'Create a header and implementation file for a class or classes'
-    parser = argparse.ArgumentParser(description=desc)
+    namespace_regex = re.compile(r'[a-zA-Z][a-zA-Z0-9_]*')
+
+    def parse_namespaces(value: str) -> list[str]:
+        namespaces = value.split('::')
+        if not all(namespace_regex.match(ns) for ns in namespaces):
+            raise ValueError
+        return namespaces
+
+    def parse_class(value: str) -> ClassInfo:
+        *namespaces, classname = parse_namespaces(value)
+        return ClassInfo(classname, namespaces)
+
+    # For good error messages
+    parse_namespaces.__name__ = 'namespace'
+    parse_class.__name__ = 'class'
+
+    parser = argparse.ArgumentParser(
+        description=__doc__.strip(),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
-        '-n', '--namespaces', action='store',
+        '-n', '--namespaces', default=[], type=parse_namespaces,
         help='Put all classes within these namespaces (e.g. foo::bar)')
     parser.add_argument(
         '-d', '--mkdirs', action='store_true',
         help='Make directories for namespaces (e.g. foo/bar/)')
     parser.add_argument(
-        '-s', '--srcdir', action='store', default='src',
+        '-s', '--srcdir', default='src',
         help='Include the header file relative to this upper directory '
              '(e.g. if set to \'src\' and creating \'/code/src/foo/bar/baz.hpp\', '
              'the header will be included as: \'#include <foo/bar/baz.hpp>). '
              'Defaults to \'src\'. If the upper directory is not found, '
              'no path is added to the include')
     parser.add_argument(
-        'classes', action='store', nargs='*',
+        'classes', nargs='*', type=parse_class,
         help='Classes to make. May contain namespaces')
     return parser.parse_args()
-
-
-def parse_class(classname: str, all_namespaces: str) -> tuple[str, list[str]]:
-    namespaces = all_namespaces.split('::') if all_namespaces else []
-    class_split = classname.split('::')
-    classname = class_split[-1]
-    namespaces += class_split[0:-1]
-    return classname, namespaces
 
 
 def make_class(classname: str, namespaces: list[str], mkdirs: bool,
