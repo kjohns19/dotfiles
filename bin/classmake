@@ -5,18 +5,19 @@ import errno
 import os
 import pathlib
 import re
+import textwrap
 import typing as t
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
-    for cls in args.classes:
-        classname, namespaces = parse_class(cls, args.namespaces)
-        make_class(classname, namespaces, args)
+    for classname in args.classes:
+        classname, namespaces = parse_class(classname, args.namespaces)
+        make_class(classname, namespaces, args.mkdirs, args.srcdir)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     desc = 'Create a header and implementation file for a class or classes'
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument(
@@ -38,29 +39,30 @@ def parse_args():
     return parser.parse_args()
 
 
-def parse_class(cls, all_namespaces):
+def parse_class(classname: str, all_namespaces: str) -> tuple[str, list[str]]:
     namespaces = all_namespaces.split('::') if all_namespaces else []
-    cls_split = cls.split('::')
-    classname = cls_split[-1]
-    namespaces += cls_split[0:-1]
+    class_split = classname.split('::')
+    classname = class_split[-1]
+    namespaces += class_split[0:-1]
     return classname, namespaces
 
 
-def make_class(classname, namespaces, args):
-    snake_name = '_'.join([s.lower() for s in re.findall(r'[A-Z][^A-Z]*', classname)])
+def make_class(classname: str, namespaces: list[str], mkdirs: bool,
+               src_dirname: t.Optional[str]) -> None:
+    snake_name = '_'.join(s.lower() for s in re.findall(r'[A-Z][^A-Z]*', classname))
 
-    headerfile = '{}.hpp'.format(snake_name)
-    classfile = '{}.cpp'.format(snake_name)
+    headerfile = pathlib.Path(snake_name + '.hpp')
+    classfile = pathlib.Path(snake_name + '.cpp')
 
-    if args.mkdirs and namespaces:
+    if mkdirs and namespaces:
         path = pathlib.Path(*namespaces)
         path.mkdir(parents=True, exist_ok=True)
         headerfile = path / headerfile
         classfile = path / classfile
 
     includefile = headerfile
-    if args.srcdir:
-        relative_path = get_relative_path(args.srcdir, pathlib.Path.cwd())
+    if src_dirname is not None:
+        relative_path = get_relative_path(src_dirname, pathlib.Path.cwd())
         if relative_path:
             includefile = relative_path / headerfile
 
@@ -68,82 +70,65 @@ def make_class(classname, namespaces, args):
     write_classfile(classfile, includefile, namespaces, classname)
 
 
-class NoFile:
-    def __bool__():
-        return False
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, type, value, tb):
-        pass
-
-
-def openNew(filename):
+def write_data(filename: pathlib.Path, data: str) -> None:
+    flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
     try:
-        flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
         fh = os.open(filename, flags, mode=0o644)
     except OSError as e:
         if e.errno == errno.EEXIST:
-            print('{} already exists'.format(filename))
-            return NoFile()
+            print(f'{filename} already exists')
+            return
         else:
             raise
-    else:
-        return os.fdopen(fh, 'w')
+    with os.fdopen(fh, 'w') as f:
+        print(data, file=f)
 
 
-def write_headerfile(filename, ns, cls):
-    data = '\n'.join([
+def write_headerfile(filename: pathlib.Path, namespaces: list[str],
+                     classname: str) -> None:
+    write_data(filename, '\n'.join([
         '#pragma once',
-        ns_header(ns),
-        class_def(cls),
-        ns_footer(ns)
-    ])
-
-    with openNew(filename) as outfile:
-        if outfile:
-            print(data, file=outfile, end='')
+        namespace_header(namespaces),
+        class_definition(classname),
+        namespace_footer(namespaces)
+    ]).strip())
 
 
-def write_classfile(filename, header, namespaces, classname):
-    data = '\n'.join([
-        '#include <{}>',
-        '{}',
+def write_classfile(filename: pathlib.Path, include_file: pathlib.Path,
+                    namespaces: list[str], classname: str) -> None:
+    write_data(filename, '\n'.join([
+        f'#include <{include_file}>',
+        namespace_header(namespaces),
         '// TODO',
-        '{}'
-    ]).format(header, ns_header(namespaces), ns_footer(namespaces))
-
-    with openNew(filename) as outfile:
-        if outfile:
-            print(data, file=outfile, end='')
+        namespace_footer(namespaces)
+    ]).strip())
 
 
-def ns_header(namespaces):
-    header = '\n'.join(['namespace ' + ns + ' {' for ns in namespaces])
+def namespace_header(namespaces: list[str]) -> str:
     if namespaces:
-        header = '\n{}\n'.format(header)
-    return header
+        header = '\n'.join('namespace ' + ns + ' {' for ns in namespaces)
+        return f'\n{header}\n'
+    return ''
 
 
-def ns_footer(namespaces):
-    footer = '\n'.join(['}  // close namespace ' + ns for ns in reversed(namespaces)])
+def namespace_footer(namespaces: list[str]) -> str:
     if namespaces:
-        footer = '\n{}\n'.format(footer)
-    return footer
+        footer = '\n'.join('}  // close namespace ' + ns for ns in reversed(namespaces))
+        return f'\n{footer}\n'
+    return ''
 
 
-def class_def(classname):
-    return '\n'.join([
-        'class {}',
-        '{}',
-        '  public:',
-        '    // TODO',
-        '',
-        '  private:',
-        '    // TODO',
-        '{};'
-    ]).format(classname, '{', '}')
+def class_definition(classname: str) -> str:
+    return textwrap.dedent(f'''
+        class {classname}
+        {{
+          public:
+            // TODO
+
+          private:
+            // TODO
+        }};
+    ''').strip()
 
 
 def get_relative_path(dirname: str, path: pathlib.Path) -> t.Optional[pathlib.Path]:
