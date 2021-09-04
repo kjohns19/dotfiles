@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3.9
 
 import argparse
 import functools
@@ -7,18 +7,18 @@ import queue
 import subprocess
 import sys
 import threading
-from typing import List
+import typing as t
 
 
-def main(argv):
-    args = parse_args(argv)
+def main() -> None:
+    args = parse_args()
 
     rcode = 0
 
-    in_queue = queue.Queue()
-    out_queue = queue.Queue()
+    in_queue: queue.Queue[t.Optional[pathlib.Path]] = queue.Queue()
+    out_queue: queue.Queue[pathlib.Path] = queue.Queue()
 
-    def worker_thread():
+    def worker_thread() -> None:
         while True:
             filename = in_queue.get()
             if filename is None:
@@ -60,38 +60,7 @@ def main(argv):
     sys.exit(rcode)
 
 
-def old_main(argv):
-    args = parse_args(argv)
-
-    tty = sys.stdout.isatty()
-
-    rcode = 0
-
-    for filearg in args.files:
-        files = get_files(filearg, args.extensions, args.ignore_dirs)
-        prev = ''
-        for file in files:
-            if tty:
-                print(f'\r{prev}\r{file}', end='')
-            if needs_reformatting(file):
-                if tty:
-                    print_red(f'\r{file} needs formatting')
-                else:
-                    print(f'{file} needs formatting')
-                prev = ''
-                rcode = 1
-            else:
-                prev = ' ' * len(str(file))
-                if not tty:
-                    print(file)
-
-    if tty:
-        print(f'\r{prev}', end='')
-
-    sys.exit(rcode)
-
-
-def parse_args(argv):
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'files', type=pathlib.Path, nargs='*',
@@ -120,7 +89,7 @@ def parse_args(argv):
     return args
 
 
-def print_red(message, **kwargs):
+def print_red(message: str, **kwargs: t.Any) -> None:
     red = tput_str('setaf', '1')
     none = tput_str('sgr0')
     print(f'{red}{message}{none}', **kwargs)
@@ -132,8 +101,8 @@ def tput_str(*args: str) -> str:
     return subprocess.run(command, check=True, capture_output=True, text=True).stdout
 
 
-def get_files(file: pathlib.Path, extensions: List[str],
-              ignore_dirs: List[str]) -> List[pathlib.Path]:
+def get_files(file: pathlib.Path, extensions: list[str],
+              ignore_dirs: list[str]) -> list[pathlib.Path]:
     if file.is_dir():
         if file.name in ignore_dirs:
             return []
@@ -157,4 +126,4 @@ def needs_reformatting(file: pathlib.Path) -> bool:
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
