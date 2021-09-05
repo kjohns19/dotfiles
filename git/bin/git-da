@@ -1,75 +1,155 @@
-#!/bin/bash
-# like git-difftool but opens all modified files in separate tabs
+#!/usr/bin/env python3.9
 
-# Helper script called by git difftool
-# Gets files to diff as arguments
-# Creates hard links for any temporary files (git difftool removes the original later)
-# Echoes both filenames to get captured
-cmd='bash -c "
-    function maketemp() {
-        file=\$1;
-        if [[ \$(dirname \"\$file\") == /tmp ]]; then
-            base=\$(basename \"\$file\");
-            tmpfile=\$(mktemp --tmpdir=/tmp --suffix \"_\${base:7}\" XXXXXX);
-            ln -f \"\$file\" \"\$tmpfile\";
-            file=\$tmpfile;
-        fi;
-        echo \"\$file\";
-    };
-    maketemp \"\$2\";
-    maketemp \"\$1\";
-" helper'
+import argparse
+import pathlib
+import subprocess
+import tempfile
+import textwrap
+import typing as t
 
-# No prompt if -f is first argument
-if [[ "$1" = -f ]]; then
-    noprompt=yes
-    shift
-fi
-
-# Get list of files to diff
-files=$(git difftool --extcmd="$cmd" --no-prompt "$@") || exit $?
-[[ -z $files ]] && exit
+_T = t.TypeVar('_T')
 
 
-# Helper functions
-# remove tmp files
-function cleanup() {
-    egrep '^/tmp' <<< "$files" | xargs rm 2>/dev/null
-}
-# Path relative to working directory
-function fixpath() {
-    realpath --relative-base . "$@"
-}
-# File is local (neither /dev/null or temporary)
-function islocal() {
-    [[ "$@" == /dev/null ]] || [[ $(dirname "$@") == /tmp ]]
-}
+def main() -> None:
+    args, extra_args = parse_args()
+    if args.helper:
+        print(preserve_temp_file(args.new_file))
+        print(preserve_temp_file(args.old_file))
+        return
 
-# Cleanup tmp files on exit
-trap cleanup EXIT
+    files = get_git_diffs(extra_args)
+    if not files:
+        return
 
-root=$(git rev-parse --show-toplevel)
-allfiles=()
-while read -r file1; do
-    read -r file2
+    # [a, b, c, d] -> [(a, b), (c, d)]
+    file_pairs = group_pairs(files)
 
-    # Make non-tmp files relative to current directory
-    islocal "$file1" || file1=$(fixpath "$root/$file1")
-    islocal "$file2" || file2=$(fixpath "$root/$file2")
+    try:
+        print_files_changed(len(file_pairs), extra_args)
+        if args.show_prompt and not show_prompt():
+            return
+        show_vimdiff(file_pairs)
+    finally:
+        delete_tmp_files(files)
 
-    allfiles+=("$file2|$file1|-d")
-    count=$(($count+1))
-done <<< "$files"
 
-# Print files that will be opened
-[[ $count > 1 ]] && mult=s
-echo "Diffing $count file$mult:"
-git diff --name-only "$@" | sed 's/^/  /'
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-f', '--force', dest='show_prompt', action='store_false',
+        help='show differences without prompt')
 
-# Prompt to continue
-response=y
-[[ -z "$noprompt" ]] && read -p 'Continue? [Y/n] ' response
-[[ "$response" = n ]] && exit
+    # Hidden subparser used by 'git difftool'
+    subparsers = parser.add_subparsers(help=argparse.SUPPRESS, dest='helper')
+    helper_subparser = subparsers.add_parser('helper')
+    helper_subparser.add_argument('new_file', type=pathlib.Path)
+    helper_subparser.add_argument('old_file', type=pathlib.Path)
 
-# Run vim
-vimopen --vimarg -R "${allfiles[@]}"
+    args, extra = parser.parse_known_args()
+    return args, extra
+
+
+def preserve_temp_file(filename: pathlib.Path) -> pathlib.Path:
+    if not filename.is_relative_to(pathlib.Path(tempfile.gettempdir())):
+        return filename.absolute()
+
+    # Strip off the random characters in the path
+    suffix = filename.name
+    if '_' in suffix:
+        suffix = suffix[suffix.index('_'):]
+
+    # mktemp doesn't create the file,
+    # so it's possible for someone to create it before we can.
+    # Just retry until we succeed
+    while True:
+        newpath = pathlib.Path(tempfile.mktemp(suffix=suffix, prefix=''))
+        try:
+            filename.link_to(newpath)
+        except FileExistsError:
+            continue
+        else:
+            return newpath.absolute()
+
+
+def get_git_diffs(args: list[str]) -> list[pathlib.Path]:
+    self_script = pathlib.Path(__file__).absolute()
+    cmd = [
+        'git', 'difftool',
+        '--extcmd', str(self_script) + ' helper',
+        '--no-prompt'
+    ] + args
+    proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    files = [
+        pathlib.Path(filename)
+        for filename in proc.stdout.strip().split('\n')
+    ]
+    return files
+
+
+def group_pairs(values: list[_T]) -> list[tuple[_T, _T]]:
+    iterator = iter(values)
+    return list(zip(iterator, iterator))
+
+
+def delete_tmp_files(files: list[pathlib.Path]) -> None:
+    tmpdir = pathlib.Path(tempfile.gettempdir())
+    for file in files:
+        if file.is_relative_to(tmpdir):
+            file.unlink(missing_ok=True)
+
+
+def print_files_changed(num_files: int, args: list[str]) -> None:
+    plural = 's' if num_files > 1 else ''
+    print(f'Diffing {num_files} file{plural}:')
+    proc = subprocess.run(['git', 'diff', '--name-only'] + args,
+                          capture_output=True, text=True)
+    print(textwrap.indent(proc.stdout, '  '), end='', flush=True)
+
+
+def show_prompt() -> bool:
+    while True:
+        try:
+            result = input('Continue? [Y/n] ')
+        except EOFError:
+            return False
+        except KeyboardInterrupt:
+            return False
+        if not result:
+            return True
+        result = result[0].upper()
+        if result == 'Y':
+            return True
+        elif result == 'N':
+            return False
+
+
+def show_vimdiff(file_pairs: list[tuple[pathlib.Path, pathlib.Path]]) -> None:
+    cwd = pathlib.Path.cwd()
+
+    def fix_path(path: pathlib.Path) -> pathlib.Path:
+        if path.is_relative_to(cwd):
+            return path.relative_to(cwd)
+        return path
+
+    edit_mode = 'e'
+    vim_cmds = []
+    for old_file, new_file in file_pairs:
+        # Open the old file on the left, new file on the right
+        vim_cmds.append(f'{edit_mode} {fix_path(new_file)}')
+        vim_cmds.append(f'vert diffsplit {fix_path(old_file)}')
+
+        # Focus the cursor on the new file
+        vim_cmds.append('wincmd l')
+
+        # Next set of files in a new tab
+        edit_mode = 'tabe'
+
+    # Go back to the first tab
+    vim_cmds.append('normal 1gt')
+
+    vim_cmd = '|'.join(vim_cmds)
+    subprocess.run(['vim', '-R', '-c', vim_cmd])
+
+
+if __name__ == '__main__':
+    main()
