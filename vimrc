@@ -13,6 +13,7 @@ Plugin 'scrooloose/syntastic'
 Plugin 'nanotech/jellybeans.vim'
 Plugin 'airblade/vim-gitgutter'
 Plugin 'nvie/vim-flake8'
+Plugin 'tikhomirov/vim-glsl'
 call vundle#end()
 filetype plugin on
 
@@ -28,9 +29,10 @@ let g:syntastic_cpp_check_header = 0
 let g:syntastic_cpp_checkers = ['gcc']
 let g:syntastic_cpp_compiler = 'g++'
 let g:syntastic_cpp_compiler_options = '-std=c++17 -Wall '
-    \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", '', '')
+    \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", ' ', '')
+    \. substitute(system('/usr/bin/python3.8-config --includes'), "\n", '', '')
 let g:syntastic_c_compiler = 'gcc'
-let g:syntastic_c_compiler_options = '-std=c11 -Wall'
+let g:syntastic_c_compiler_options = '-std=gnu17 -Wall'
 let g:syntastic_loc_list_height = 5
 let g:syntastic_python_python_exec = '/usr/bin/python3'
 

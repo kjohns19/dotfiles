@@ -1,60 +1,56 @@
 # dotfiles
-A few configuration dotfiles I use in my setup. This also has some scripts that I use. Run setup_links.sh to create symbolics links in your home directory to use them.
+
+A few configuration dotfiles I use in my setup. This also has some scripts that I use. Run `install.py` to create symbolics links in your home directory to use them.
+
 
 ## classmake
-Create an empty C++ class.
+
+Create an empty C++ class
 
 ```
-$ classmake SampleClass
+$ classmake sample::SampleClass
 $ ls
 sample_class.cpp  sample_class.hpp
-$ cat sample_class.hpp 
-#ifndef INCLUDED_SAMPLE_CLASS_HPP
-#define INCLUDED_SAMPLE_CLASS_HPP
+
+$ cat sample_class.hpp
+#pragma once
+
+namespace sample {
 
 class SampleClass
 {
-public:
+  public:
     // TODO
-private:
+
+  private:
     // TODO
 };
 
-#endif // INCLUDED_SAMPLE_CLASS_HPP
-$ cat sample_class.cpp 
+}  // close namespace sample
+
+$ cat sample_class.cpp
 #include <sample_class.hpp>
+
+namespace sample {
 
 // TODO
 
+}  // close namespace sample
 ```
 
-Run `classmake -h` for usage.
+Run `classmake --help` for usage.
 
-## swap
-Swap two files
+## check-format
 
-```
-$ cat a
-A
-$ cat b
-B
-$ swap a b
-$ cat a
-B
-$ cat b
-A
-```
-
-Run `swap -h` for usage.
-
-## vimopen
-Open files in multiple tabs/splits using vim
+Quickly check all C++ files for format issues using clang-format
 
 ```
-$ vimopen file1 file2 'file3|file4'
-# Opens file1 and file2 in separate tabs. In a 3rd tab open file3 and file4 in splits
-$ vimopen 'file1|file2|-d' 'file3|file4|-d'
-# Compares file1 with file2 and file3 with file4
+$ ls
+sample_class.cpp  sample_class.hpp
+
+$ check-format
+Checking 2 files...
+sample_class.hpp needs formatting
 ```
 
-Run `vimopen -h` for usage.
+Run `check-format --help` for usage.
