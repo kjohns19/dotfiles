@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.9
 
 import argparse
+import os
 import pathlib
 import subprocess
 import tempfile
@@ -13,8 +14,8 @@ _T = t.TypeVar('_T')
 def main() -> None:
     args, extra_args = parse_args()
     if args.helper:
-        print(preserve_temp_file(args.new_file))
         print(preserve_temp_file(args.old_file))
+        print(preserve_temp_file(args.new_file))
         return
 
     files = get_git_diffs(extra_args)
@@ -39,11 +40,16 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
         '-f', '--force', dest='show_prompt', action='store_false',
         help='show differences without prompt')
 
-    # Hidden subparser used by 'git difftool'
+    # Hidden subparser used by 'git diff'
     subparsers = parser.add_subparsers(help=argparse.SUPPRESS, dest='helper')
     helper_subparser = subparsers.add_parser('helper')
-    helper_subparser.add_argument('new_file', type=pathlib.Path)
+    helper_subparser.add_argument('filename', type=pathlib.Path)
     helper_subparser.add_argument('old_file', type=pathlib.Path)
+    helper_subparser.add_argument('old_sha')
+    helper_subparser.add_argument('old_mode')
+    helper_subparser.add_argument('new_file', type=pathlib.Path)
+    helper_subparser.add_argument('new_sha')
+    helper_subparser.add_argument('new_mode')
 
     args, extra = parser.parse_known_args()
     return args, extra
@@ -73,12 +79,10 @@ def preserve_temp_file(filename: pathlib.Path) -> pathlib.Path:
 
 def get_git_diffs(args: list[str]) -> list[pathlib.Path]:
     self_script = pathlib.Path(__file__).absolute()
-    cmd = [
-        'git', 'difftool',
-        '--extcmd', str(self_script) + ' helper',
-        '--no-prompt'
-    ] + args
-    proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    cmd = ['git', 'diff'] + args
+    env = os.environ.copy()
+    env['GIT_EXTERNAL_DIFF'] = str(self_script) + ' helper'
+    proc = subprocess.run(cmd, env=env, check=True, capture_output=True, text=True)
     files = [
         pathlib.Path(filename)
         for filename in proc.stdout.strip().split('\n')
