@@ -53,8 +53,12 @@ def main() -> None:
         fileset.add(filename)
         rcode += 1
 
+    cwd = pathlib.Path.cwd()
+
     for filename in all_files:
         if filename in fileset:
+            if filename.is_relative_to(cwd):
+                filename = filename.relative_to(cwd)
             print_red(f'{filename} needs formatting')
 
     sys.exit(rcode)
