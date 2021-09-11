@@ -4,6 +4,7 @@ import argparse
 import os
 import pathlib
 import subprocess
+import sys
 import tempfile
 import textwrap
 import typing as t
@@ -11,16 +12,22 @@ import typing as t
 _T = t.TypeVar('_T')
 
 
-def main() -> None:
+def main() -> int:
     args, extra_args = parse_args()
     if args.helper:
+        # This happens for unmerged paths - do nothing
+        if args.old_file is None:
+            return 0
         print(preserve_temp_file(args.old_file))
         print(preserve_temp_file(args.new_file))
-        return
+        return 0
+
+    if check_unmerged_paths(extra_args):
+        return 1
 
     files = get_git_diffs(extra_args)
     if not files:
-        return
+        return 0
 
     # [a, b, c, d] -> [(a, b), (c, d)]
     file_pairs = group_pairs(files)
@@ -28,10 +35,11 @@ def main() -> None:
     try:
         print_files_changed(len(file_pairs), extra_args)
         if args.show_prompt and not show_prompt():
-            return
+            return 0
         show_vimdiff(file_pairs)
     finally:
         delete_tmp_files(files)
+    return 0
 
 
 def parse_args() -> tuple[argparse.Namespace, list[str]]:
@@ -44,12 +52,14 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
     subparsers = parser.add_subparsers(help=argparse.SUPPRESS, dest='helper')
     helper_subparser = subparsers.add_parser('helper')
     helper_subparser.add_argument('filename', type=pathlib.Path)
-    helper_subparser.add_argument('old_file', type=pathlib.Path)
-    helper_subparser.add_argument('old_sha')
-    helper_subparser.add_argument('old_mode')
-    helper_subparser.add_argument('new_file', type=pathlib.Path)
-    helper_subparser.add_argument('new_sha')
-    helper_subparser.add_argument('new_mode')
+
+    # Only the filename is given for unmerged paths, so these fields are optional
+    helper_subparser.add_argument('old_file', nargs='?', type=pathlib.Path)
+    helper_subparser.add_argument('old_sha', nargs='?')
+    helper_subparser.add_argument('old_mode', nargs='?')
+    helper_subparser.add_argument('new_file', nargs='?', type=pathlib.Path)
+    helper_subparser.add_argument('new_sha', nargs='?')
+    helper_subparser.add_argument('new_mode', nargs='?')
 
     args, extra = parser.parse_known_args()
     return args, extra
@@ -75,6 +85,20 @@ def preserve_temp_file(filename: pathlib.Path) -> pathlib.Path:
             continue
         else:
             return newpath.absolute()
+
+
+def check_unmerged_paths(args: list[str]) -> bool:
+    # --cached/--staged will always work when there are unmerged paths
+    if '--cached' in args or '--staged' in args:
+        return False
+
+    cmd = ['git', 'diff', '--name-only', '--diff-filter=U'] + args
+    proc = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    if proc.stdout:
+        print('There are unmerged paths:')
+        print(textwrap.indent(proc.stdout, '  '), end='', flush=True)
+        return True
+    return False
 
 
 def get_git_diffs(args: list[str]) -> list[pathlib.Path]:
@@ -107,8 +131,9 @@ def delete_tmp_files(files: list[pathlib.Path]) -> None:
 def print_files_changed(num_files: int, args: list[str]) -> None:
     plural = 's' if num_files > 1 else ''
     print(f'Diffing {num_files} file{plural}:')
-    proc = subprocess.run(['git', 'diff', '--name-only'] + args,
-                          capture_output=True, text=True)
+    # Exclude unmerged paths
+    cmd = ['git', 'diff', '--name-only', '--diff-filter=ACDMRTXB'] + args
+    proc = subprocess.run(cmd, capture_output=True, text=True)
     print(textwrap.indent(proc.stdout, '  '), end='', flush=True)
 
 
@@ -158,4 +183,4 @@ def show_vimdiff(file_pairs: list[tuple[pathlib.Path, pathlib.Path]]) -> None:
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
