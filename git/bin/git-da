@@ -83,6 +83,8 @@ def get_git_diffs(args: list[str]) -> list[pathlib.Path]:
     env = os.environ.copy()
     env['GIT_EXTERNAL_DIFF'] = str(self_script) + ' helper'
     proc = subprocess.run(cmd, env=env, check=True, capture_output=True, text=True)
+    if not proc.stdout:
+        return []
     files = [
         pathlib.Path(filename)
         for filename in proc.stdout.strip().split('\n')
