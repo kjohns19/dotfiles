@@ -1,28 +1,50 @@
-#!/bin/bash
+#!/usr/bin/env python3.9
 
-if [ "$1" == -f ]; then
-    force=yes
-    shift
-fi
+''' Swap two files '''
 
-if [ $# -ne 2 ]; then
-    echo "Usage: $(basename "$0") [-f] file1 file2" >&2
-    exit 1
-fi
+import argparse
+import pathlib
+import tempfile
+import sys
 
-for file in "$1" "$2"; do
-    if [ ! -f "$file" ]; then
-        echo "File $file does not exist" >&2
-        errors=yes
-    fi
-done
-[ -n "$errors" ] && [ -z "$force" ] && exit 2
 
-tmp=$(mktemp -d --tmpdir=$(dirname $1))
-tmpfile="$tmp/$(basename "$1")"
+def main() -> int:
+    args = parse_args()
 
-[ -f "$1" ]       && mv "$1" "$tmpfile"
-[ -f "$2" ]       && mv "$2" "$1"
-[ -f "$tmpfile" ] && mv "$tmpfile" "$2"
+    error = False
+    if not args.file1.exists():
+        print(f'File {args.file1} does not exist', file=sys.stderr)
+        error = True
+    if not args.file2.exists():
+        print(f'File {args.file2} does not exist', file=sys.stderr)
+        error = True
+    if error:
+        return 1
 
-rm -r $tmp
+    file1 = args.file1.resolve()
+    file2 = args.file2.resolve()
+
+    with tempfile.TemporaryDirectory(dir=file1.parent) as tmpdir:
+        tmpfile = pathlib.Path(tmpdir) / 'file'
+        file2.link_to(tmpfile)
+        file1.replace(file2)
+        tmpfile.rename(file1)
+
+    return 0
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument(
+        'file1', type=pathlib.Path,
+        help='the first file')
+    parser.add_argument(
+        'file2', type=pathlib.Path,
+        help='the second file')
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    sys.exit(main())
