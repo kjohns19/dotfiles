@@ -1,8 +1,12 @@
 #!/bin/bash
 
 # Funtions to time the last command
+__get_time() {
+    # %-N removes *trailing* zeroes, not leading ones, so use sed to remove them
+    date +'%-s %N' | sed 's/ 0\+/ /g'
+}
 __set_command_start() {
-    [ -z "$_command_start" ] && _command_start=$(date +"%-s %-N")
+    [ -z "$_command_start" ] && _command_start=$(__get_time)
 }
 __format_time() {
     local -i h=$(($1/3600))
@@ -21,7 +25,7 @@ __calc_elapsed_time() {
     local -i end_ns
     read begin_s begin_ns <<< "$_command_start"
     begin_ns=${begin_ns##+(0)}
-    read end_s end_ns <<< $(date +"%-s %-N")
+    read end_s end_ns <<< $(__get_time)
     end_ns=${end_ns##+(0)}
     local -i s=$((end_s - begin_s))
     local -i ms
