@@ -4,16 +4,20 @@ import argparse
 import functools
 import pathlib
 import queue
+import re
 import subprocess
 import sys
 import threading
 import typing as t
 
 
-def main() -> None:
+def main() -> int:
     args = parse_args()
 
-    rcode = 0
+    formatter = find_formatter() if args.formatter is None else args.formatter
+    if formatter is None:
+        print_red('No formatter found. Is clang-format installed?')
+        return 1
 
     in_queue: queue.Queue[t.Optional[pathlib.Path]] = queue.Queue()
     out_queue: queue.Queue[pathlib.Path] = queue.Queue()
@@ -23,7 +27,7 @@ def main() -> None:
             filename = in_queue.get()
             if filename is None:
                 break
-            if needs_reformatting(filename):
+            if needs_reformatting(formatter, filename):
                 out_queue.put(filename)
 
     workers = [threading.Thread(target=worker_thread) for _ in range(4)]
@@ -35,7 +39,9 @@ def main() -> None:
             all_files.append(filename)
 
     if not args.quiet:
-        print(f'Checking {len(all_files)} files...')
+        num_files = len(all_files)
+        plural = '' if num_files == 1 else 's'
+        print(f'Checking {num_files} file{plural} using {formatter}')
 
     for worker in workers:
         in_queue.put(None)
@@ -43,6 +49,8 @@ def main() -> None:
 
     for worker in workers:
         worker.join()
+
+    rcode = 0
 
     fileset = set()
     while True:
@@ -61,28 +69,33 @@ def main() -> None:
                 filename = filename.relative_to(cwd)
             print_red(f'{filename} needs formatting')
 
-    sys.exit(rcode)
+    return min(rcode, 127)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'files', type=pathlib.Path, nargs='*',
-        help='Files or directories to check. '
+        help='files or directories to check. '
              'If not given, default to current directory')
 
     parser.add_argument(
         '-e', '--extensions', default=', '.join(['.cpp', '.hpp', '.c', '.h']),
-        help='Comma-separated list of file extensions to search for. '
+        help='comma-separated list of file extensions to search for. '
              'Defaults to: %(default)s')
 
     parser.add_argument(
         '--ignore-dirs', default=['CMakeFiles', '.git'], nargs='*',
-        help='Ignore a directory. Can specify multiple times. Defaults to %(default)s')
+        help='ignore a directory. Can specify multiple times. Defaults to %(default)s')
+
+    parser.add_argument(
+        '-f', '--formatter', type=pathlib.Path,
+        help='formatter command to use. By default uses the latest installed '
+             'clang-format (/usr/bin/clang-format-*)')
 
     parser.add_argument(
         '-q', '--quiet', action='store_true',
-        help='Don\'t print the "Checking <num> files..." text')
+        help='don\'t print the "Checking <num> files..." text')
 
     args = parser.parse_args()
 
@@ -91,6 +104,19 @@ def parse_args() -> argparse.Namespace:
     args.extensions = [ext.strip() for ext in args.extensions.split(',')]
 
     return args
+
+
+def find_formatter() -> t.Optional[pathlib.Path]:
+    pattern = re.compile('clang-format-([0-9]+)')
+    matching_paths = (
+        (path, pattern.match(path.name))
+        for path in pathlib.Path('/usr/bin').glob('clang-format-*')
+    )
+    versioned_paths = (
+        (path, int(match.group(1)))
+        for path, match in matching_paths if match is not None
+    )
+    return max(versioned_paths, default=(None, 0), key=lambda x: x[1])[0]
 
 
 def print_red(message: str, **kwargs: t.Any) -> None:
@@ -121,8 +147,7 @@ def get_files(file: pathlib.Path, extensions: list[str],
         return []
 
 
-def needs_reformatting(file: pathlib.Path) -> bool:
-    formatter = '/usr/bin/clang-format-10'
+def needs_reformatting(formatter: pathlib.Path, file: pathlib.Path) -> bool:
     proc = subprocess.run([formatter, '--dry-run', '-Werror', file],
                           stdout=subprocess.DEVNULL,
                           stderr=subprocess.DEVNULL)
@@ -130,4 +155,4 @@ def needs_reformatting(file: pathlib.Path) -> bool:
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
