@@ -48,18 +48,24 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
         '-f', '--force', dest='show_prompt', action='store_false',
         help='show differences without prompt')
 
-    # Hidden subparser used by 'git diff'
-    subparsers = parser.add_subparsers(help=argparse.SUPPRESS, dest='helper')
-    helper_subparser = subparsers.add_parser('helper')
-    helper_subparser.add_argument('filename', type=pathlib.Path)
+    # parse_known_args will fail if a positional argument isn't 'helper'
+    # So just check if 'helper' has been passed first
+    # (we know it will be the 1st argument)
+    if len(sys.argv) > 1 and sys.argv[1] == 'helper':
+        # Hidden subparser used by 'git diff'
+        subparsers = parser.add_subparsers(help=argparse.SUPPRESS, dest='helper')
+        helper_subparser = subparsers.add_parser('helper')
+        helper_subparser.add_argument('filename', type=pathlib.Path)
 
-    # Only the filename is given for unmerged paths, so these fields are optional
-    helper_subparser.add_argument('old_file', nargs='?', type=pathlib.Path)
-    helper_subparser.add_argument('old_sha', nargs='?')
-    helper_subparser.add_argument('old_mode', nargs='?')
-    helper_subparser.add_argument('new_file', nargs='?', type=pathlib.Path)
-    helper_subparser.add_argument('new_sha', nargs='?')
-    helper_subparser.add_argument('new_mode', nargs='?')
+        # Only the filename is given for unmerged paths, so these fields are optional
+        helper_subparser.add_argument('old_file', nargs='?', type=pathlib.Path)
+        helper_subparser.add_argument('old_sha', nargs='?')
+        helper_subparser.add_argument('old_mode', nargs='?')
+        helper_subparser.add_argument('new_file', nargs='?', type=pathlib.Path)
+        helper_subparser.add_argument('new_sha', nargs='?')
+        helper_subparser.add_argument('new_mode', nargs='?')
+    else:
+        parser.set_defaults(helper=None)
 
     args, extra = parser.parse_known_args()
     return args, extra
