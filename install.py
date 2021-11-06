@@ -33,7 +33,8 @@ def main() -> None:
         ('git/bin', 'bin/git'),
         ('git/hooks', '.git/hooks'),
         ('vim/ftplugin', '.vim/ftplugin'),
-        ('vim/swapfiles', '.vim/swapfiles')
+        ('vim/swapfiles', '.vim/swapfiles'),
+        ('vim/after/syntax', '.vim/after/syntax'),
     ]
     for srcname, destname in dirs:
         make_dir(root, root / srcname, args.directory / destname, dryrun=args.dryrun)
