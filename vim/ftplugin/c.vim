@@ -1,9 +1,9 @@
 " This is also loaded by C++
 function s:Format()
-    %py3f /usr/share/clang/clang-format-10/clang-format.py
+    %py3f /usr/share/clang/clang-format-13/clang-format.py
 endfunction
 function s:FormatRange() range
-    '<,'>py3f /usr/share/clang/clang-format-10/clang-format.py
+    '<,'>py3f /usr/share/clang/clang-format-13/clang-format.py
 endfunction
 
 let b:FileFormatFunc = function('<SID>Format')
