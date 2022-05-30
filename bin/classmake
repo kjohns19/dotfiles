@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.9
+#!/usr/bin/env python3.10
 
 ''' Create header (.hpp) and implementation (.cpp) files for C++ classes '''
 
@@ -9,7 +9,6 @@ import os
 import pathlib
 import re
 import textwrap
-import typing as t
 
 
 @dataclasses.dataclass
@@ -66,7 +65,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def make_class(classname: str, namespaces: list[str], mkdirs: bool,
-               src_dirname: t.Optional[str]) -> None:
+               src_dirname: str | None) -> None:
     snake_name = '_'.join(s.lower() for s in re.findall(r'[A-Z][^A-Z]*', classname))
 
     headerfile = pathlib.Path(snake_name + '.hpp')
@@ -149,7 +148,7 @@ def class_definition(classname: str) -> str:
     ''').strip()
 
 
-def get_relative_path(dirname: str, path: pathlib.Path) -> t.Optional[pathlib.Path]:
+def get_relative_path(dirname: str, path: pathlib.Path) -> pathlib.Path | None:
     parts = path.parts
     if dirname not in parts:
         return None

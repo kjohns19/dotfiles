@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.9
+#!/usr/bin/env python3.10
 
 import argparse
 import functools
@@ -8,7 +8,6 @@ import re
 import subprocess
 import sys
 import threading
-import typing as t
 
 
 def main() -> int:
@@ -19,7 +18,7 @@ def main() -> int:
         print_red('No formatter found. Is clang-format installed?')
         return 1
 
-    in_queue: queue.Queue[t.Optional[pathlib.Path]] = queue.Queue()
+    in_queue: queue.Queue[pathlib.Path | None] = queue.Queue()
     out_queue: queue.Queue[pathlib.Path] = queue.Queue()
 
     def worker_thread() -> None:
@@ -106,7 +105,7 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
-def find_formatter() -> t.Optional[pathlib.Path]:
+def find_formatter() -> pathlib.Path | None:
     pattern = re.compile('clang-format-([0-9]+)')
     matching_paths = (
         (path, pattern.match(path.name))
@@ -119,10 +118,10 @@ def find_formatter() -> t.Optional[pathlib.Path]:
     return max(versioned_paths, default=(None, 0), key=lambda x: x[1])[0]
 
 
-def print_red(message: str, **kwargs: t.Any) -> None:
+def print_red(message: str) -> None:
     red = tput_str('setaf', '1')
     none = tput_str('sgr0')
-    print(f'{red}{message}{none}', **kwargs)
+    print(f'{red}{message}{none}')
 
 
 @functools.lru_cache()
