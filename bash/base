@@ -34,4 +34,4 @@ eval $(dircolors -b)
 . /etc/bash_completion
 
 # add local bin and git
-PATH=~/bin:~/bin/git:$PATH
+PATH=~/bin:~/bin/git:~/.local/bin:$PATH
