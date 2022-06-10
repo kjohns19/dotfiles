@@ -1,8 +1,15 @@
 #!/usr/bin/env python3.10
 
 import argparse
+import dataclasses
 import os
 import pathlib
+
+
+@dataclasses.dataclass
+class Args:
+    directory: pathlib.Path
+    dryrun: bool
 
 
 def main() -> None:
@@ -31,7 +38,7 @@ def main() -> None:
         install(root, root / srcname, args.directory / destname, dryrun=args.dryrun)
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args() -> Args:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -44,7 +51,7 @@ def parse_args() -> argparse.Namespace:
         help='Don\'t actually install anything')
 
     args = parser.parse_args()
-    return args
+    return Args(args.directory, args.dryrun)
 
 
 def install(root: pathlib.Path, src: pathlib.Path, dest: pathlib.Path,
