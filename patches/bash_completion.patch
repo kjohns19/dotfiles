@@ -1,0 +1,11 @@
+--- bash_completion.old	2022-06-10 18:16:05.626380399 -0400
++++ bash_completion.new	2022-06-10 18:16:09.630373018 -0400
+@@ -623,6 +623,8 @@
+         # 2>/dev/null for direct invocation, e.g. in the _filedir unit test
+         compopt -o filenames 2>/dev/null
+         COMPREPLY+=("${toks[@]}")
++    else
++        compopt -o bashdefault 2>/dev/null
+     fi
+ } # _filedir()
+ 
