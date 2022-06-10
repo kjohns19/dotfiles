@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+FILE="/usr/share/bash-completion/bash_completion"
+patch "$FILE" "$0"
+exit $?
 --- bash_completion.old	2022-06-10 18:16:05.626380399 -0400
 +++ bash_completion.new	2022-06-10 18:16:09.630373018 -0400
 @@ -623,6 +623,8 @@
