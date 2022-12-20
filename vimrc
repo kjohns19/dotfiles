@@ -84,6 +84,9 @@ set updatetime=250
 " command history
 set history=500
 
+" allow more tabs to open when using vim -p ___
+set tabpagemax=100
+
 let mapleader="\<C-k>"
 
 " different color past 100 characters
