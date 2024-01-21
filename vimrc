@@ -34,6 +34,7 @@ let g:syntastic_cpp_compiler_options = '-std=c++20 -Wall '
     \. substitute(system('/usr/bin/python3.8-config --includes'), "\n", '', '')
 let g:syntastic_c_compiler = 'gcc'
 let g:syntastic_c_compiler_options = '-std=gnu17 -Wall'
+let g:syntastic_c_config_file = '.syntastic_c_config'
 let g:syntastic_loc_list_height = 5
 let g:syntastic_python_python_exec = '/usr/bin/python3.10'
 
