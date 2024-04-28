@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python3.12
 
 ''' This script is intended to be run by the vim C/C++ format commands (see c.vim)
 

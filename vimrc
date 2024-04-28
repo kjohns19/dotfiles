@@ -36,7 +36,7 @@ let g:syntastic_c_compiler = 'gcc'
 let g:syntastic_c_compiler_options = '-std=gnu17 -Wall'
 let g:syntastic_c_config_file = '.syntastic_c_config'
 let g:syntastic_loc_list_height = 5
-let g:syntastic_python_python_exec = '/usr/bin/python3.10'
+let g:syntastic_python_python_exec = '/usr/bin/python3.12'
 
 " flake8 settings
 let g:flake8_show_in_gutter=1
