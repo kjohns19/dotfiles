@@ -86,7 +86,7 @@ def preserve_temp_file(filename: pathlib.Path) -> pathlib.Path:
     while True:
         newpath = pathlib.Path(tempfile.mktemp(suffix=suffix, prefix=''))
         try:
-            filename.link_to(newpath)
+            newpath.hardlink_to(filename)
         except FileExistsError:
             continue
         else:
