@@ -44,28 +44,43 @@ def parse_args() -> argparse.Namespace:
 
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
-        '-n', '--namespaces', default=[], type=parse_namespaces,
-        help='Put all classes within these namespaces (e.g. foo::bar)')
+        '-n',
+        '--namespaces',
+        default=[],
+        type=parse_namespaces,
+        help='Put all classes within these namespaces (e.g. foo::bar)',
+    )
     parser.add_argument(
-        '-d', '--mkdirs', action='store_true',
-        help='Make directories for namespaces (e.g. foo/bar/)')
+        '-d',
+        '--mkdirs',
+        action='store_true',
+        help='Make directories for namespaces (e.g. foo/bar/)',
+    )
     parser.add_argument(
-        '-s', '--srcdir', default='src',
+        '-s',
+        '--srcdir',
+        default='src',
         help='Include the header file relative to this upper directory '
-             '(e.g. if set to \'src\' and creating \'/code/src/foo/bar/baz.hpp\', '
-             'the header will be included as: \'#include <foo/bar/baz.hpp>). '
-             'Defaults to \'src\'. If the upper directory is not found, '
-             'no path is added to the include')
+        '(e.g. if set to \'src\' and creating \'/code/src/foo/bar/baz.hpp\', '
+        'the header will be included as: \'#include <foo/bar/baz.hpp>). '
+        'Defaults to \'src\'. If the upper directory is not found, '
+        'no path is added to the include',
+    )
     parser.add_argument(
-        'classes', nargs='*', type=parse_class,
-        help='Classes to make. May contain namespaces')
+        'classes',
+        nargs='*',
+        type=parse_class,
+        help='Classes to make. May contain namespaces',
+    )
     return parser.parse_args()
 
 
-def make_class(classname: str, namespaces: list[str], mkdirs: bool,
-               src_dirname: str | None) -> None:
+def make_class(
+    classname: str, namespaces: list[str], mkdirs: bool, src_dirname: str | None
+) -> None:
     snake_name = '_'.join(s.lower() for s in re.findall(r'[A-Z][^A-Z]*', classname))
 
     headerfile = pathlib.Path(snake_name + '.hpp')
@@ -101,24 +116,39 @@ def write_data(filename: pathlib.Path, data: str) -> None:
         print(data, file=f)
 
 
-def write_headerfile(filename: pathlib.Path, namespaces: list[str],
-                     classname: str) -> None:
-    write_data(filename, '\n'.join([
-        '#pragma once',
-        namespace_header(namespaces),
-        class_definition(classname),
-        namespace_footer(namespaces)
-    ]).strip())
+def write_headerfile(
+    filename: pathlib.Path, namespaces: list[str], classname: str
+) -> None:
+    write_data(
+        filename,
+        '\n'.join(
+            [
+                '#pragma once',
+                namespace_header(namespaces),
+                class_definition(classname),
+                namespace_footer(namespaces),
+            ]
+        ).strip(),
+    )
 
 
-def write_classfile(filename: pathlib.Path, include_file: pathlib.Path,
-                    namespaces: list[str], classname: str) -> None:
-    write_data(filename, '\n'.join([
-        f'#include <{include_file}>',
-        namespace_header(namespaces),
-        '// TODO',
-        namespace_footer(namespaces)
-    ]).strip())
+def write_classfile(
+    filename: pathlib.Path,
+    include_file: pathlib.Path,
+    namespaces: list[str],
+    classname: str,
+) -> None:
+    write_data(
+        filename,
+        '\n'.join(
+            [
+                f'#include <{include_file}>',
+                namespace_header(namespaces),
+                '// TODO',
+                namespace_footer(namespaces),
+            ]
+        ).strip(),
+    )
 
 
 def namespace_header(namespaces: list[str]) -> str:
@@ -136,7 +166,8 @@ def namespace_footer(namespaces: list[str]) -> str:
 
 
 def class_definition(classname: str) -> str:
-    return textwrap.dedent(f'''
+    return textwrap.dedent(
+        f'''
         class {classname}
         {{
           public:
@@ -145,7 +176,8 @@ def class_definition(classname: str) -> str:
           private:
             // TODO
         }};
-    ''').strip()
+    '''
+    ).strip()
 
 
 def get_relative_path(dirname: str, path: pathlib.Path) -> pathlib.Path | None:

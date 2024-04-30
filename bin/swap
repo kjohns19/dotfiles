@@ -36,12 +36,8 @@ def main() -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument(
-        'file1', type=pathlib.Path,
-        help='the first file')
-    parser.add_argument(
-        'file2', type=pathlib.Path,
-        help='the second file')
+    parser.add_argument('file1', type=pathlib.Path, help='the first file')
+    parser.add_argument('file2', type=pathlib.Path, help='the second file')
 
     return parser.parse_args()
 

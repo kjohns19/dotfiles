@@ -27,10 +27,11 @@ def find_formatter() -> pathlib.Path | None:
     )
     versioned_paths = (
         (path / 'clang-format.py', int(match.group(1)))
-        for path, match in matching_paths if match is not None
+        for path, match in matching_paths
+        if match is not None
     )
     return max(versioned_paths, default=(None, 0), key=lambda x: x[1])[0]
 
 
 if __name__ == '__main__':
-    main();
+    main()

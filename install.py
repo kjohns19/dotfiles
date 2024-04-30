@@ -18,12 +18,14 @@ def main() -> None:
 
     root = pathlib.Path(__file__).parent.resolve()
     paths = [
-        (file, file) for file in [
-            'bin'
+        (file, file)
+        for file in [
+            'bin',
         ]
     ]
     dot_paths = [
-        (file, f'.{file}') for file in [
+        (file, f'.{file}')
+        for file in [
             'ackrc',
             'bash',
             'bash_profile',
@@ -49,30 +51,42 @@ def parse_args() -> Args:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--directory', '-d', type=pathlib.Path, default=pathlib.Path.home(),
-        help='Install to this directory. '
-             'By default this will be the user\'s home directory')
+        '--directory',
+        '-d',
+        type=pathlib.Path,
+        default=pathlib.Path.home(),
+        help='install to this directory. '
+        'By default this will be the user\'s home directory',
+    )
 
     parser.add_argument(
-        '--dryrun', action='store_true',
-        help='Don\'t actually install anything')
+        '--dryrun',
+        action='store_true',
+        help='don\'t actually install anything',
+    )
 
     args = parser.parse_args()
     return Args(args.directory, args.dryrun)
 
 
-def install(root: pathlib.Path, src: pathlib.Path, dest: pathlib.Path,
-            dryrun: bool = False, indent: int = 0) -> None:
+def install(
+    root: pathlib.Path,
+    src: pathlib.Path,
+    dest: pathlib.Path,
+    dryrun: bool = False,
+    indent: int = 0,
+) -> None:
     tabs = '  ' * indent
     print(f'{tabs}{src.relative_to(root)} => {dest}')
     is_dir = src.is_dir()
 
     # Check if dest already exists
-    if (dest.is_symlink() or dest.exists()):
+    if dest.is_symlink() or dest.exists():
         # if src is a directory, backup dest if it isn't a directory
         # if src is not a directory, backup dest if it isn't a symlink to src
-        if (is_dir and (dest.is_symlink() or not dest.is_dir())) or \
-           (not is_dir and not (dest.is_symlink() and os.readlink(dest) == str(src))):
+        if (is_dir and (dest.is_symlink() or not dest.is_dir())) or (
+            not is_dir and not (dest.is_symlink() and os.readlink(dest) == str(src))
+        ):
             backup(dest, dryrun=dryrun, indent=indent + 1)
         elif not is_dir:
             return

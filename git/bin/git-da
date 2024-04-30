@@ -45,8 +45,12 @@ def main() -> int:
 def parse_args() -> tuple[argparse.Namespace, list[str]]:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '-f', '--force', dest='show_prompt', action='store_false',
-        help='show differences without prompt')
+        '-f',
+        '--force',
+        dest='show_prompt',
+        action='store_false',
+        help='show differences without prompt',
+    )
 
     # parse_known_args will fail if a positional argument isn't 'helper'
     # So just check if 'helper' has been passed first
@@ -78,7 +82,7 @@ def preserve_temp_file(filename: pathlib.Path) -> pathlib.Path:
     # Strip off the random characters in the path
     suffix = filename.name
     if '_' in suffix:
-        suffix = suffix[suffix.index('_'):]
+        suffix = suffix[suffix.index('_') :]
 
     # mktemp doesn't create the file,
     # so it's possible for someone to create it before we can.
@@ -115,10 +119,7 @@ def get_git_diffs(args: list[str]) -> list[pathlib.Path]:
     proc = subprocess.run(cmd, env=env, check=True, capture_output=True, text=True)
     if not proc.stdout:
         return []
-    files = [
-        pathlib.Path(filename)
-        for filename in proc.stdout.strip().split('\n')
-    ]
+    files = [pathlib.Path(filename) for filename in proc.stdout.strip().split('\n')]
     return files
 
 

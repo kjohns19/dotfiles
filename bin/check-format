@@ -74,27 +74,42 @@ def main() -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'files', type=pathlib.Path, nargs='*',
+        'files',
+        type=pathlib.Path,
+        nargs='*',
         help='files or directories to check. '
-             'If not given, default to current directory')
+        'If not given, default to current directory',
+    )
 
     parser.add_argument(
-        '-e', '--extensions', default=', '.join(['.cpp', '.hpp', '.c', '.h']),
+        '-e',
+        '--extensions',
+        default=', '.join(['.cpp', '.hpp', '.c', '.h']),
         help='comma-separated list of file extensions to search for. '
-             'Defaults to: %(default)s')
+        'Defaults to: %(default)s',
+    )
 
     parser.add_argument(
-        '--ignore-dirs', default=['CMakeFiles', '.git'], nargs='*',
-        help='ignore a directory. Can specify multiple times. Defaults to %(default)s')
+        '--ignore-dirs',
+        default=['CMakeFiles', '.git'],
+        nargs='*',
+        help='ignore a directory. Can specify multiple times. Defaults to %(default)s',
+    )
 
     parser.add_argument(
-        '-f', '--formatter', type=pathlib.Path,
+        '-f',
+        '--formatter',
+        type=pathlib.Path,
         help='formatter command to use. By default uses the latest installed '
-             'clang-format (/usr/bin/clang-format-*)')
+        'clang-format (/usr/bin/clang-format-*)',
+    )
 
     parser.add_argument(
-        '-q', '--quiet', action='store_true',
-        help='don\'t print the "Checking <num> files..." text')
+        '-q',
+        '--quiet',
+        action='store_true',
+        help='don\'t print the "Checking <num> files..." text',
+    )
 
     args = parser.parse_args()
 
@@ -113,7 +128,8 @@ def find_formatter() -> pathlib.Path | None:
     )
     versioned_paths = (
         (path, int(match.group(1)))
-        for path, match in matching_paths if match is not None
+        for path, match in matching_paths
+        if match is not None
     )
     return max(versioned_paths, default=(None, 0), key=lambda x: x[1])[0]
 
@@ -130,8 +146,9 @@ def tput_str(*args: str) -> str:
     return subprocess.run(command, check=True, capture_output=True, text=True).stdout
 
 
-def get_files(file: pathlib.Path, extensions: list[str],
-              ignore_dirs: list[str]) -> list[pathlib.Path]:
+def get_files(
+    file: pathlib.Path, extensions: list[str], ignore_dirs: list[str]
+) -> list[pathlib.Path]:
     if file.is_dir():
         if file.name in ignore_dirs:
             return []
@@ -147,9 +164,11 @@ def get_files(file: pathlib.Path, extensions: list[str],
 
 
 def needs_reformatting(formatter: pathlib.Path, file: pathlib.Path) -> bool:
-    proc = subprocess.run([formatter, '--dry-run', '-Werror', file],
-                          stdout=subprocess.DEVNULL,
-                          stderr=subprocess.DEVNULL)
+    proc = subprocess.run(
+        [formatter, '--dry-run', '-Werror', file],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     return proc.returncode != 0
 
 

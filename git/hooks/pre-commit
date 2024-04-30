@@ -9,8 +9,12 @@ def main() -> None:
 
 
 def get_staged_files() -> list[str]:
-    proc = subprocess.run(['git', 'diff', '--name-only', '--cached'],
-                          check=True, capture_output=True, text=True)
+    proc = subprocess.run(
+        ['git', 'diff', '--name-only', '--cached'],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     return [f for f in proc.stdout.strip().split('\n') if f]
 
 
