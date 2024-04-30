@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+typeset -r SCRIPT_DIR=$(dirname "$(realpath "$0")")
+typeset -r VENV_DIR=$SCRIPT_DIR/../venv
+
+. "$VENV_DIR/bin/activate"
+"$@"

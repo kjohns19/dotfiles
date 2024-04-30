@@ -28,7 +28,6 @@ def main() -> None:
         ('bash_profile', '.bash_profile'),
         ('bashrc',       '.bashrc'),
         ('clang-format', '.clang-format'),
-        ('flake8',       '.flake8'),
         ('gitconfig',    '.gitconfig'),
         ('inputrc',      '.inputrc'),
         ('tmux.conf',    '.tmux.conf'),

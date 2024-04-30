@@ -1,11 +1,17 @@
 #!/bin/bash
 
-# colors for ls, grep and friends
+# Colors for ls, grep and friends
 alias    ls='ls    --color=auto -F'
 alias  grep='grep  --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
-# prompt before overwriting for mv and cp
+# Prompt before overwriting for mv and cp
 alias mv='mv -i'
 alias cp='cp -i'
+
+# Python tools
+alias flake8="run-venv flake8 --max-line-length 88 --extend-exclude venv"
+alias mypy="run-venv mypy --strict --exclude venv"
+alias pylint="run-venv pylint --recursive yes --ignore-paths venv"
+alias black="run-venv black --skip-string-normalization --extend-exclude venv"
