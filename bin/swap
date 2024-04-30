@@ -26,9 +26,9 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(dir=file1.parent) as tmpdir:
         tmpfile = pathlib.Path(tmpdir) / 'file'
-        file2.link_to(tmpfile)
-        file1.replace(file2)
-        tmpfile.rename(file1)
+        file1.rename(tmpfile)
+        file2.rename(file1)
+        tmpfile.rename(file2)
 
     return 0
 
