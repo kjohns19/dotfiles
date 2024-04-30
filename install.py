@@ -17,23 +17,31 @@ def main() -> None:
     print(f'Installing to {args.directory}')
 
     root = pathlib.Path(__file__).parent.resolve()
-    src_dest = [
-        # Directories
-        ('bash/',        '.bash/'),
-        ('bin/',         'bin/'),
-        ('git/',         '.git/'),
-        ('vim/',         '.vim/'),
-        # Files
-        ('ackrc',        '.ackrc'),
-        ('bash_profile', '.bash_profile'),
-        ('bashrc',       '.bashrc'),
-        ('clang-format', '.clang-format'),
-        ('gitconfig',    '.gitconfig'),
-        ('inputrc',      '.inputrc'),
-        ('tmux.conf',    '.tmux.conf'),
-        ('vimrc',        '.vimrc'),
+    paths = [
+        (file, file) for file in [
+            'bin'
+        ]
     ]
-    for srcname, destname in src_dest:
+    dot_paths = [
+        (file, f'.{file}') for file in [
+            'ackrc',
+            'bash',
+            'bash_profile',
+            'bashrc',
+            'blackrc',
+            'clang-format',
+            'flake8',
+            'git',
+            'gitconfig',
+            'inputrc',
+            'mypy.ini',
+            'pylintrc',
+            'tmux.conf',
+            'vim',
+            'vimrc',
+        ]
+    ]
+    for srcname, destname in paths + dot_paths:
         install(root, root / srcname, args.directory / destname, dryrun=args.dryrun)
 
 

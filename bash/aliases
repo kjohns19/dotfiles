@@ -11,7 +11,7 @@ alias mv='mv -i'
 alias cp='cp -i'
 
 # Python tools
-alias flake8="run-venv flake8 --max-line-length 88 --extend-exclude venv"
-alias mypy="run-venv mypy --strict --exclude venv"
-alias pylint="run-venv pylint --recursive yes --ignore-paths venv"
-alias black="run-venv black --skip-string-normalization --extend-exclude venv"
+alias flake8="run-venv flake8 --config ~/.flake8"
+alias mypy="run-venv mypy"
+alias pylint="run-venv pylint"
+alias black="run-venv black --config ~/.blackrc"

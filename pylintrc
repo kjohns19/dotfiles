@@ -1,0 +1,3 @@
+[MASTER]
+recursive = yes
+ignore-paths = venv
