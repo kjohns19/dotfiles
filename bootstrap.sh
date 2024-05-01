@@ -32,6 +32,7 @@ install_python_tools() {
     pip install --upgrade \
         black \
         flake8 \
+        isort \
         mypy \
         pylint \
         --

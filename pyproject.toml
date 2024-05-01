@@ -1,10 +1,14 @@
-[tool.mypy]
-strict = true
-exclude = 'venv'
-
 [tool.black]
 skip-string-normalization = true
 extend-exclude = 'venv'
+
+[tool.isort]
+profile = 'black'
+extend_skip = 'venv'
+
+[tool.mypy]
+strict = true
+exclude = 'venv'
 
 [tool.pylint.MASTER]
 max-line-length = 88

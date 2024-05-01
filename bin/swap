@@ -4,8 +4,8 @@
 
 import argparse
 import pathlib
-import tempfile
 import sys
+import tempfile
 
 
 def main() -> int:
