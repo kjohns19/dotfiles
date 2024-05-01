@@ -15,11 +15,10 @@ _T = t.TypeVar('_T')
 def main() -> int:
     args, extra_args = parse_args()
     if args.helper:
-        # This happens for unmerged paths - do nothing
-        if args.old_file is None:
-            return 0
-        print(preserve_temp_file(args.old_file))
-        print(preserve_temp_file(args.new_file))
+        # There's no old file for unmerged paths
+        if args.old_file is not None:
+            print(preserve_temp_file(args.old_file))
+            print(preserve_temp_file(args.new_file))
         return 0
 
     if check_unmerged_paths(extra_args):
@@ -33,10 +32,11 @@ def main() -> int:
     file_pairs = group_pairs(files)
 
     try:
-        print_files_changed(len(file_pairs), extra_args)
-        if args.show_prompt and not show_prompt():
-            return 0
-        show_vimdiff(file_pairs)
+        rc = print_files_changed(len(file_pairs), extra_args)
+        if rc:
+            return rc
+        if not args.show_prompt or show_prompt():
+            return show_vimdiff(file_pairs)
     finally:
         delete_tmp_files(files)
     return 0
@@ -135,13 +135,16 @@ def delete_tmp_files(files: list[pathlib.Path]) -> None:
             file.unlink(missing_ok=True)
 
 
-def print_files_changed(num_files: int, args: list[str]) -> None:
+def print_files_changed(num_files: int, args: list[str]) -> int:
     plural = 's' if num_files > 1 else ''
     print(f'Diffing {num_files} file{plural}:')
     # Exclude unmerged paths
     cmd = ['git', 'diff', '--name-only', '--diff-filter=ACDMRTXB'] + args
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False
+    )
     print(textwrap.indent(proc.stdout, '  '), end='', flush=True)
+    return proc.returncode
 
 
 def show_prompt() -> bool:
@@ -157,11 +160,11 @@ def show_prompt() -> bool:
         result = result[0].upper()
         if result == 'Y':
             return True
-        elif result == 'N':
+        if result == 'N':
             return False
 
 
-def show_vimdiff(file_pairs: list[tuple[pathlib.Path, pathlib.Path]]) -> None:
+def show_vimdiff(file_pairs: list[tuple[pathlib.Path, pathlib.Path]]) -> int:
     cwd = pathlib.Path.cwd()
 
     def fix_path(path: pathlib.Path) -> pathlib.Path:
@@ -186,7 +189,8 @@ def show_vimdiff(file_pairs: list[tuple[pathlib.Path, pathlib.Path]]) -> None:
     vim_cmds.append('normal 1gt')
 
     vim_cmd = '|'.join(vim_cmds)
-    subprocess.run(['vim', '-R', '-c', vim_cmd])
+    proc = subprocess.run(['vim', '-R', '-c', vim_cmd], check=False)
+    return proc.returncode
 
 
 if __name__ == '__main__':

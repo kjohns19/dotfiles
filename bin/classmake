@@ -99,7 +99,7 @@ def make_class(
             includefile = relative_path / headerfile
 
     write_headerfile(headerfile, namespaces, classname)
-    write_classfile(classfile, includefile, namespaces, classname)
+    write_classfile(classfile, includefile, namespaces)
 
 
 def write_data(filename: pathlib.Path, data: str) -> None:
@@ -110,8 +110,7 @@ def write_data(filename: pathlib.Path, data: str) -> None:
         if e.errno == errno.EEXIST:
             print(f'{filename} already exists')
             return
-        else:
-            raise
+        raise
     with os.fdopen(fh, 'w') as f:
         print(data, file=f)
 
@@ -133,10 +132,7 @@ def write_headerfile(
 
 
 def write_classfile(
-    filename: pathlib.Path,
-    include_file: pathlib.Path,
-    namespaces: list[str],
-    classname: str,
+    filename: pathlib.Path, include_file: pathlib.Path, namespaces: list[str]
 ) -> None:
     write_data(
         filename,

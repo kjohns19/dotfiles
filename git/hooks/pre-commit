@@ -21,7 +21,7 @@ def get_staged_files() -> list[str]:
 def check_format(files: list[str]) -> None:
     if not files:
         return
-    subprocess.run(['check-format', '-q'] + files)
+    subprocess.run(['check-format', '-q'] + files, check=False)
 
 
 if __name__ == '__main__':

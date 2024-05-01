@@ -157,10 +157,9 @@ def get_files(
             for subfile in file.iterdir()
             for file in get_files(subfile, extensions, ignore_dirs)
         ]
-    elif file.is_file() and file.suffix in extensions:
+    if file.is_file() and file.suffix in extensions:
         return [file]
-    else:
-        return []
+    return []
 
 
 def needs_reformatting(formatter: pathlib.Path, file: pathlib.Path) -> bool:
@@ -168,6 +167,7 @@ def needs_reformatting(formatter: pathlib.Path, file: pathlib.Path) -> bool:
         [formatter, '--dry-run', '-Werror', file],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
+        check=False,
     )
     return proc.returncode != 0
 

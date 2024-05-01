@@ -6,6 +6,14 @@ exclude = 'venv'
 skip-string-normalization = true
 extend-exclude = 'venv'
 
-[tool.pylint]
+[tool.pylint.MASTER]
 recursive = true
 ignore-paths = 'venv'
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    'invalid-name',
+    'missing-class-docstring',
+    'missing-function-docstring',
+    'missing-module-docstring',
+]
