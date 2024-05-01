@@ -1,0 +1,11 @@
+[tool.mypy]
+strict = true
+exclude = 'venv'
+
+[tool.black]
+skip-string-normalization = true
+extend-exclude = 'venv'
+
+[tool.pylint]
+recursive = true
+ignore-paths = 'venv'
