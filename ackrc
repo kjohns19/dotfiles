@@ -1,2 +1,5 @@
 # Ignore mypy cache
 --ignore-dir=.mypy_cache
+
+# Ignore virtual environments
+--ignore-dir=venv
