@@ -15,7 +15,7 @@ max-line-length = 88
 recursive = true
 ignore-paths = 'venv'
 
-[tool.pylint."MESSAGES CONTROL"]
+[tool.pylint.messages_control]
 disable = [
     'invalid-name',
     'missing-class-docstring',
