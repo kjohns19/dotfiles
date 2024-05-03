@@ -5,7 +5,6 @@ AlignAfterOpenBracket: AlwaysBreak
 AlignEscapedNewlines: Left
 AllowShortFunctionsOnASingleLine: Empty
 AlwaysBreakTemplateDeclarations: true
-BasedOnStyle: LLVM
 BraceWrapping:
     AfterCaseLabel: true
     AfterClass: true
