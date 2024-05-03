@@ -1,1 +1,5 @@
 set editing-mode vi
+
+# Disable 'v' editing the command
+set keymap vi-command
+v: ""
