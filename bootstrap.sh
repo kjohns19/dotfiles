@@ -1,24 +1,34 @@
 #!/usr/bin/env bash
 
+set -e
+
 typeset -r SCRIPT_DIR=$(dirname "$0")
 typeset -r PYTHON=python3.12
 
-set -e
+typeset -r -a DEPENDENCIES=(
+    ack
+    clang-format-18
+    cmake
+    g++
+    gcc
+    git
+    $PYTHON
+    $PYTHON-venv
+    tmux
+    vim-gtk3
+)
+
+typeset -a PYTHON_DEPENDENCIES=(
+    black
+    flake8
+    isort
+    mypy
+    pylint
+)
 
 install_dependencies() {
     echo "Installing dependencies"
-    sudo apt install \
-        ack \
-        clang-format-18 \
-        cmake \
-        g++ \
-        gcc \
-        git \
-        $PYTHON \
-        $PYTHON-venv \
-        tmux \
-        vim-gtk3 \
-        --
+    sudo apt install "${DEPENDENCIES[@]}"
 }
 
 install_python_tools() {
@@ -29,13 +39,7 @@ install_python_tools() {
     fi
     . "$venv_dir/bin/activate"
     pip install --upgrade pip
-    pip install --upgrade \
-        black \
-        flake8 \
-        isort \
-        mypy \
-        pylint \
-        --
+    pip install --upgrade "${PYTHON_DEPENDENCIES[@]}"
     deactivate
 }
 
