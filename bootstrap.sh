@@ -38,8 +38,8 @@ install_python_tools() {
         $PYTHON -m venv "$venv_dir"
     fi
     . "$venv_dir/bin/activate"
-    pip install --upgrade pip
-    pip install --upgrade "${PYTHON_DEPENDENCIES[@]}"
+    pip install --upgrade --upgrade-strategy=eager pip
+    pip install --upgrade --upgrade-strategy=eager "${PYTHON_DEPENDENCIES[@]}"
     deactivate
 }
 
