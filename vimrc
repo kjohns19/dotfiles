@@ -40,6 +40,8 @@ let g:syntastic_python_python_exec = '/usr/bin/python3.12'
 
 " flake8 settings
 let g:flake8_show_in_gutter=1
+" Same flake8 command as the bash alias
+let g:flake8_cmd=$HOME .. '/bin/run-venv flake8 --config ' .. $HOME .. '/.flake8'
 
 " 256 colors
 set t_Co=256
