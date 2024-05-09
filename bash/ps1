@@ -43,7 +43,8 @@ set_ps1() {
     local EXIT=$?
     local TIME=$(__calc_elapsed_time)
     local DATE=$(date +"%H:%M:%S")
-    local JOBS=$(jobs -rp | wc -l)
+    local RUNNING_JOBS=$(jobs -rp | wc -l)
+    local STOPPED_JOBS=$(jobs -sp | wc -l)
     local BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null)
     local USER=$(whoami)
     local HOST=$(hostname)
@@ -83,9 +84,9 @@ set_ps1() {
     fi
 
     # Show number of jobs if > 0
-    if [[ "$JOBS" -gt 0 ]]; then
+    if [[ "$RUNNING_JOBS" -gt 0 || "$STOPPED_JOBS" -gt 0 ]]; then
         PROMPTFMT+=" $YELLOW%s"
-        PROMPTARGS+=("$JOBS")
+        PROMPTARGS+=("$RUNNING_JOBS|$STOPPED_JOBS")
     fi
 
     # Show exit status of last command if != 0
