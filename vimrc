@@ -29,9 +29,7 @@ let g:syntastic_cpp_config_file = '.syntastic_cpp_config'
 let g:syntastic_cpp_check_header = 0
 let g:syntastic_cpp_checkers = ['gcc']
 let g:syntastic_cpp_compiler = 'g++'
-let g:syntastic_cpp_compiler_options = '-std=c++20 -Wall '
-    \. substitute(system('pkg-config --cflags-only-I gtkmm-3.0'), "\n", ' ', '')
-    \. substitute(system('/usr/bin/python3.8-config --includes'), "\n", '', '')
+let g:syntastic_cpp_compiler_options = '-std=c++23 -Wall '
 let g:syntastic_c_compiler = 'gcc'
 let g:syntastic_c_compiler_options = '-std=gnu17 -Wall'
 let g:syntastic_c_config_file = '.syntastic_c_config'
