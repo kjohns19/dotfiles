@@ -79,16 +79,11 @@ def preserve_temp_file(filename: pathlib.Path) -> pathlib.Path:
     if not filename.is_relative_to(pathlib.Path(tempfile.gettempdir())):
         return filename.absolute()
 
-    # Strip off the random characters in the path
-    suffix = filename.name
-    if '_' in suffix:
-        suffix = suffix[suffix.index('_') :]
-
     # mktemp doesn't create the file,
     # so it's possible for someone to create it before we can.
     # Just retry until we succeed
     while True:
-        newpath = pathlib.Path(tempfile.mktemp(suffix=suffix, prefix=''))
+        newpath = pathlib.Path(tempfile.mktemp(suffix=f'_{filename.name}', prefix=''))
         try:
             newpath.hardlink_to(filename)
         except FileExistsError:
