@@ -32,6 +32,7 @@ def main() -> None:
             'bashrc',
             'clang-format',
             'flake8',
+            'gdbinit',
             'git',
             'gitconfig',
             'inputrc',
