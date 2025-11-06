@@ -25,4 +25,4 @@ IndentWidth: 4
 PenaltyReturnTypeOnItsOwnLine: 1000
 SpaceAfterTemplateKeyword: false
 SpacesBeforeTrailingComments: 2
-Standard: Auto
+Standard: Latest
